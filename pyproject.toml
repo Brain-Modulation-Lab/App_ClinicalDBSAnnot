@@ -1,16 +1,126 @@
 [project]
-name = "app-clinicaldbsannot"
+name = "clinical-dbs-annotator"
 version = "0.1.0"
-description = "Add your description here"
+description = "A PyQt5-based tool for annotating DBS clinical programming sessions"
 readme = "README.md"
 requires-python = ">=3.11"
+authors = [
+    { name = "Lucia Poma", email = "lpoma@mgh.harvard.edu" }
+]
+keywords = ["dbs", "clinical", "annotation", "neuroscience", "deep-brain-stimulation"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Healthcare Industry",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Medical Science Apps.",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "License :: OSI Approved :: MIT License",
+    "Environment :: X11 Applications :: Qt",
+    "Operating System :: OS Independent",
+]
+
 dependencies = [
-    "opencv-python-headless>=4.12.0.88",
-    "pyinstaller>=6.15.0",
     "pyqt5==5.15.10",
     "pyqt5-qt5==5.15.2",
     "pytz>=2025.2",
+    "pandas>=2.1",
+    "python-docx>=1.1",
+    "reportlab>=4.0",
+    "openpyxl>=3.1",
+    "pydantic>=2.0"
 ]
 
-#"pyqt5==5.15.10",
-#    "pyqt5-qt5==5.15.2",
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-qt>=4.4.0",
+    "pytest-cov>=4.1.0",
+    "black>=24.0.0",
+    "ruff>=0.1.0",
+    # "mypy>=1.8.0",
+    "pre-commit>=3.6"
+]
+build = [
+    "pyinstaller>=6.15.0",
+    "opencv-python-headless>=4.12.0.88",
+]
+docs = ["sphinx", "sphinx-rtd-theme"]
+
+[project.scripts]
+clinical-dbs-annotator = "clinical_dbs_annotator.__main__:main"
+
+[project.urls]
+Homepage = "https://github.com/bml/clinical-dbs-annotator"
+Repository = "https://github.com/bml/clinical-dbs-annotator"
+Documentation = "https://github.com/bml/clinical-dbs-annotator/blob/main/README.md"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/clinical_dbs_annotator"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "--verbose",
+    "--cov=clinical_dbs_annotator",
+    "--cov-report=html",
+    "--cov-report=term-missing",
+]
+
+[tool.black]
+line-length = 88
+target-version = ["py311"]
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hatch
+  | \.venv
+  | build
+  | dist
+)/
+'''
+
+[tool.ruff]
+line-length = 88
+target-version = "py311"
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "N",   # pep8-naming
+    "UP",  # pyupgrade
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+]
+ignore = [
+    "E501",  # line too long (handled by black)
+]
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+check_untyped_defs = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+strict_optional = true
+
+[[tool.mypy.overrides]]
+module = "PyQt5.*"
+ignore_missing_imports = true

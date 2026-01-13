@@ -10,7 +10,31 @@ wheels/
 
 # Virtual environments
 .venv
+venv/
+env/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+*.cover
+.hypothesis/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
 
 # Directories to ignore
 docs/
 archive/
+
+# Data files (optional - uncomment if you don't want to commit patient data)
+# *.tsv
+# *.csv
