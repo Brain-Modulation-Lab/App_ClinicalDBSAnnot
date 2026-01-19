@@ -31,7 +31,7 @@ from ..config import (
     PRESET_BUTTONS,
     STIMULATION_LIMITS,
 )
-from ..ui import create_horizontal_line, MultiSelectComboBox
+from ..ui import create_horizontal_line, MultiSelectComboBoxWithDisplay
 from .base_view import BaseStepView
 
 
@@ -138,29 +138,29 @@ class Step1View(BaseStepView):
         )
         layout.addRow(QLabel("Stimulation frequency:"), self.left_stim_freq_edit)
 
-        # Left Anode (-)
-        self.left_anode_combo = MultiSelectComboBox()
-        self.left_anode_combo.setMaximumWidth(150)
+        # Left Anode (+)
+        self.left_anode_combo = MultiSelectComboBoxWithDisplay()
+        self.left_anode_combo.setMinimumWidth(150)
         self.left_anode_combo.addItems([
-            "ground", "0", "1a", "1b", "1c", "1-all",
-            "2a", "2b", "2c", "2-all", "3"
+            "case", "0 ring", "1 ring", "1a", "1b", "1c",
+            "2 ring", "2a", "2b", "2c", "3 ring"
         ])
-        anode_label = QLabel("Anode (-):")
+        anode_label = QLabel("Anode (+):")
         layout.addRow(anode_label, self.left_anode_combo)
 
-        # Left Cathode (+)
-        self.left_cathode_combo = MultiSelectComboBox()
-        self.left_cathode_combo.setMaximumWidth(150)
+        # Left Cathode (-)
+        self.left_cathode_combo = MultiSelectComboBoxWithDisplay()
+        self.left_cathode_combo.setMinimumWidth(150)
         self.left_cathode_combo.addItems([
-            "ground", "0", "1a", "1b", "1c", "1-all",
-            "2a", "2b", "2c", "2-all", "3"
+            "case", "0 ring", "1 ring", "1a", "1b", "1c",
+            "2 ring", "2a", "2b", "2c", "3 ring"
         ])
-        # Set ground as default for cathode
-        self.left_cathode_combo.set_selected_items(["ground"])
-        cathode_label = QLabel("Cathode (+):")
+        # # Set ground as default for cathode
+        # self.left_cathode_combo.set_selected_items(["ground"])
+        cathode_label = QLabel("Cathode (-):")
         layout.addRow(cathode_label, self.left_cathode_combo)
 
-        # Amplitude
+        # Left amplitude
         self.left_amp_edit = QLineEdit()
         self.left_amp_edit.setMaximumWidth(80)
         self.left_amp_edit.setPlaceholderText(PLACEHOLDERS["amplitude"])
@@ -170,7 +170,7 @@ class Step1View(BaseStepView):
         )
         layout.addRow(QLabel("Amplitude:"), self.left_amp_edit)
 
-        # Pulse width
+        # Left pulse width
         self.left_pw_edit = QLineEdit()
         self.left_pw_edit.setMaximumWidth(80)
         self.left_pw_edit.setPlaceholderText(PLACEHOLDERS["pulse_width"])
@@ -179,6 +179,8 @@ class Step1View(BaseStepView):
         layout.addRow(QLabel("Pulse width:"), self.left_pw_edit)
 
         layout.addWidget(create_horizontal_line())
+
+
 
         # Right electrode section
         layout.addRow(QLabel(""), QLabel(""))  # Empty row for spacing
@@ -195,29 +197,29 @@ class Step1View(BaseStepView):
         )
         layout.addRow(QLabel("Stimulation frequency:"), self.right_stim_freq_edit)
 
-        # Right Anode (-)
-        self.right_anode_combo = MultiSelectComboBox()
+        # Right Anode (+)
+        self.right_anode_combo = MultiSelectComboBoxWithDisplay()
         self.right_anode_combo.setMaximumWidth(150)
         self.right_anode_combo.addItems([
-            "ground", "0", "1a", "1b", "1c", "1-all",
-            "2a", "2b", "2c", "2-all", "3"
+            "case", "0 ring", "1 ring", "1a", "1b", "1c",
+            "2 ring", "2a", "2b", "2c", "3 ring"
         ])
-        anode_label_r = QLabel("Anode (-):")
+        anode_label_r = QLabel("Anode (+):")
         layout.addRow(anode_label_r, self.right_anode_combo)
 
-        # Right Cathode (+)
-        self.right_cathode_combo = MultiSelectComboBox()
+        # Right Cathode (-)
+        self.right_cathode_combo = MultiSelectComboBoxWithDisplay()
         self.right_cathode_combo.setMaximumWidth(150)
         self.right_cathode_combo.addItems([
-            "ground", "0", "1a", "1b", "1c", "1-all",
-            "2a", "2b", "2c", "2-all", "3"
+            "case", "0 ring", "1 ring", "1a", "1b", "1c",
+            "2 ring", "2a", "2b", "2c", "3 ring"
         ])
-        # Set ground as default for cathode
-        self.right_cathode_combo.set_selected_items(["ground"])
-        cathode_label_r = QLabel("Cathode (+):")
+        # # Set ground as default for cathode
+        # self.right_cathode_combo.set_selected_items(["ground"])
+        cathode_label_r = QLabel("Cathode (-):")
         layout.addRow(cathode_label_r, self.right_cathode_combo)
 
-        # Amplitude
+        # Right amplitude
         self.right_amp_edit = QLineEdit()
         self.right_amp_edit.setMaximumWidth(80)
         self.right_amp_edit.setPlaceholderText(PLACEHOLDERS["amplitude"])
@@ -226,7 +228,7 @@ class Step1View(BaseStepView):
         )
         layout.addRow(QLabel("Amplitude:"), self.right_amp_edit)
 
-        # Pulse width
+        # Right plse width
         self.right_pw_edit = QLineEdit()
         self.right_pw_edit.setMaximumWidth(80)
         self.right_pw_edit.setPlaceholderText(PLACEHOLDERS["pulse_width"])

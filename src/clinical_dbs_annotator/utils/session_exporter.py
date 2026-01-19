@@ -184,6 +184,67 @@ class SessionExporter:
                 f"Failed to export session data:\n{str(e)}"
             )
             return False
+    
+    def _create_lateral_table_data(self, df):
+        """
+        Create lateral table structure for Word and PDF exports.
+        
+        Returns DataFrame with lateral structure:
+        - Left side parameters in first row
+        - Right side parameters in second row
+        - Non-lateral data merged vertically
+        """
+        if df.empty:
+            return df
+        
+        # Create new lateral structure
+        lateral_data = []
+        
+        # Process each original row into two lateral rows
+        for _, row in df.iterrows():
+            # Left side row
+            left_row = {}
+            right_row = {}
+            
+            # Common columns (non-lateral)
+            common_cols = ['scale_name', 'scale_value', 'session_condition', 'notes']
+            for col in common_cols:
+                if col in df.columns:
+                    left_row[col] = row[col]
+                    right_row[col] = row[col]
+            
+            # Lateral columns - map to generic names
+            lateral_mappings = {
+                'left_frequency': 'frequency',
+                'left_cathode': 'cathode',
+                'left_anode': 'anode',
+                'left_amplitude': 'amplitude',
+                'left_pulse_width': 'pulse_width',
+                'right_frequency': 'frequency',
+                'right_cathode': 'cathode',
+                'right_anode': 'anode',
+                'right_amplitude': 'amplitude',
+                'right_pulse_width': 'pulse_width'
+            }
+            
+            # Left side parameters
+            for left_col, generic_col in lateral_mappings.items():
+                if left_col.startswith('left_') and left_col in df.columns:
+                    left_row[generic_col] = row[left_col]
+            
+            # Right side parameters
+            for right_col, generic_col in lateral_mappings.items():
+                if right_col.startswith('right_') and right_col in df.columns:
+                    right_row[generic_col] = row[right_col]
+            
+            # Add lateral indicator
+            left_row['laterality'] = 'Left'
+            right_row['laterality'] = 'Right'
+            
+            lateral_data.append(left_row)
+            lateral_data.append(right_row)
+        
+        return pd.DataFrame(lateral_data)
 
     def export_to_pdf(self, parent: Optional[QWidget] = None) -> bool:
         """
@@ -293,18 +354,38 @@ class SessionExporter:
             story.append(summary_table)
             story.append(Paragraph("<br/>", metadata_style))
             
-            # Add data table section
+            # Add data table section with lateral structure
             story.append(Paragraph("Session Data", heading_style))
             
+            # Create lateral structure
+            lateral_df = self._create_lateral_table_data(df)
+            
+            # Remove date/time columns for Word/PDF
+            columns_to_exclude = ['date', 'time', 'onset']
+            display_columns = [col for col in lateral_df.columns if col not in columns_to_exclude]
+            
+            # Reorder columns: lateral parameters first, then common data at the end
+            lateral_cols = ['laterality', 'frequency', 'cathode', 'anode', 'amplitude', 'pulse_width']
+            common_cols = ['scale_name', 'scale_value', 'session_condition', 'notes']
+            
+            # Filter available columns
+            lateral_cols = [col for col in lateral_cols if col in display_columns]
+            common_cols = [col for col in common_cols if col in display_columns]
+            ordered_columns = lateral_cols + common_cols
+            
             # Prepare data for table
-            table_data = [list(df.columns)]
-            for _, row in df.iterrows():
-                table_data.append([str(value) if pd.notna(value) else '' for value in row])
+            table_data = [ordered_columns]
+            for _, row in lateral_df.iterrows():
+                row_data = []
+                for col in ordered_columns:
+                    value = str(row[col]) if pd.notna(row[col]) and col in row else ''
+                    row_data.append(value)
+                table_data.append(row_data)
             
             # Create main data table
             data_table = Table(table_data)
             
-            # Style the table
+            # Style the table with thin lines
             table_style = TableStyle([
                 ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
                 ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
@@ -313,7 +394,7 @@ class SessionExporter:
                 ('FONTSIZE', (0, 0), (-1, 0), 8),
                 ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
                 ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
-                ('GRID', (0, 0), (-1, -1), 1, colors.black),
+                ('GRID', (0, 0), (-1, -1), 0.5, colors.black),  # Thin lines everywhere
                 ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
             ])
             
@@ -321,6 +402,16 @@ class SessionExporter:
             for i in range(1, len(table_data)):
                 if i % 2 == 0:
                     table_style.add('BACKGROUND', (0, i), (-1, i), colors.lightgrey)
+                
+                # Add thick horizontal line ONLY between left/right pairs
+                if i > 1 and i % 2 == 1:  # Right side rows
+                    table_style.add('LINEABOVE', (0, i), (-1, i), 3, colors.black)  # Thick line only between pairs
+            
+            # Add thicker borders for common columns to indicate merged cells
+            common_col_indices = [ordered_columns.index(col) for col in common_cols if col in ordered_columns]
+            for col_idx in common_col_indices:
+                # Add right border to common columns to separate from lateral columns
+                table_style.add('LINEAFTER', (col_idx, 0), (col_idx, -1), 2, colors.black)
             
             data_table.setStyle(table_style)
             story.append(data_table)
@@ -442,27 +533,73 @@ class SessionExporter:
             
             doc.add_paragraph('')  # Empty line
             
-            # Add data table
+            # Add data table with lateral structure
             doc.add_heading('Session Data', level=1)
             
-            # Convert DataFrame to table
-            table = doc.add_table(rows=df.shape[0] + 1, cols=df.shape[1])
+            # Create lateral structure
+            lateral_df = self._create_lateral_table_data(df)
+            
+            # Remove date/time columns for Word/PDF
+            columns_to_exclude = ['date', 'time', 'onset']
+            display_columns = [col for col in lateral_df.columns if col not in columns_to_exclude]
+            
+            # Reorder columns: lateral parameters first, then common data at the end
+            lateral_cols = ['laterality', 'frequency', 'cathode', 'anode', 'amplitude', 'pulse_width']
+            common_cols = ['scale_name', 'scale_value', 'session_condition', 'notes']
+            
+            # Filter available columns
+            lateral_cols = [col for col in lateral_cols if col in display_columns]
+            common_cols = [col for col in common_cols if col in display_columns]
+            ordered_columns = lateral_cols + common_cols
+            # Convert DataFrame to table with thin grid
+            table = doc.add_table(rows=lateral_df.shape[0] + 1, cols=len(ordered_columns))
             table.style = 'Table Grid'
+            
+            # Set thin borders for entire table first
+            for row in table.rows:
+                for cell in row.cells:
+                    for border in cell._element.xpath('.//w:tcBorders'):
+                        for border_name in ['top', 'left', 'bottom', 'right']:
+                            border_elem = border.find(f'{{http://schemas.openxmlformats.org/wordprocessingml/2006/main}}{border_name}')
+                            if border_elem is not None:
+                                border_elem.set('{{http://schemas.openxmlformats.org/wordprocessingml/2006/main}}sz', '2')  # Thin lines
             
             # Add header row
             hdr_cells = table.rows[0].cells
-            for i, col_name in enumerate(df.columns):
+            for i, col_name in enumerate(ordered_columns):
                 hdr_cells[i].text = str(col_name).replace('_', ' ').title()
                 # Make header bold
                 for paragraph in hdr_cells[i].paragraphs:
                     for run in paragraph.runs:
                         run.font.bold = True
             
-            # Add data rows
-            for i, (_, row) in enumerate(df.iterrows()):
+            # Add data rows with merged cells for common data
+            for i, (_, row) in enumerate(lateral_df.iterrows()):
                 row_cells = table.rows[i + 1].cells
-                for j, value in enumerate(row):
-                    row_cells[j].text = str(value) if pd.notna(value) else ''
+                for j, col in enumerate(ordered_columns):
+                    if col in row:
+                        cell_value = str(row[col]) if pd.notna(row[col]) else ''
+                        row_cells[j].text = cell_value
+                        
+                        # Merge cells for common data between left/right rows
+                        if col in common_cols:
+                            # If this is a right row and previous row exists, merge with previous
+                            if row.get('laterality') == 'Right' and i > 0:
+                                # Merge with previous row's cell
+                                prev_cell = table.rows[i].cells[j]
+                                prev_cell.merge(row_cells[j])
+                                # Clear the current cell and keep value in merged cell
+                                row_cells[j].text = ''
+                                prev_cell.text = cell_value
+                
+                # Add thick border above right side rows (separation between left/right pairs)
+                if row.get('laterality') == 'Right':
+                    for cell in row_cells:
+                        for border in cell._element.xpath('.//w:tcBorders'):
+                            top = border.find('{http://schemas.openxmlformats.org/wordprocessingml/2006/main}top')
+                            if top is not None:
+                                top.set('{http://schemas.openxmlformats.org/wordprocessingml/2006/main}sz', '6')
+                                top.set('{http://schemas.openxmlformats.org/wordprocessingml/2006/main}val', 'single')
             
             doc.add_paragraph('')  # Empty line
             

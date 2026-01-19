@@ -36,7 +36,7 @@ QLineEdit, QTextEdit, QPlainTextEdit {
     border: 1px solid #475569;
     border-radius: 4px;
     padding: 3px 6px;
-    selection-background-color: #2563eb;
+    selection-background-color: #f59e0b;
     selection-color: white;
     font-size: 11px;
 }
@@ -47,7 +47,7 @@ QLineEdit:hover, QTextEdit:hover, QPlainTextEdit:hover {
 }
 
 QLineEdit:focus, QTextEdit:focus, QPlainTextEdit:focus {
-    border: 1px solid #2563eb;
+    border: 1px solid #f59e0b;
     background-color: #3b4a62;
     outline: none;
 }
@@ -63,9 +63,10 @@ QComboBox {
     background-color: #334155;
     color: #f1f5f9;
     border: 1px solid #475569;
-    border-radius: 4px;
-    padding: 3px 6px;
+    border-radius: 6px;
+    padding: 6px 10px;
     font-size: 11px;
+    font-weight: 500;
 }
 
 QComboBox:hover {
@@ -74,9 +75,11 @@ QComboBox:hover {
 }
 
 QComboBox:focus {
-    border: 1px solid #2563eb;
+    border: 1px solid #f59e0b;
     background-color: #3b4a62;
+    outline: none;
 }
+
 
 QComboBox::drop-down {
     border: none;
@@ -95,9 +98,31 @@ QComboBox QAbstractItemView {
     background-color: #334155;
     color: #f1f5f9;
     border: 1px solid #475569;
+    border-radius: 6px;
+    alternate-background-color: #2b3648;
     selection-background-color: #2563eb;
     selection-color: white;
+    padding: 4px;
+    font-size: 11px;
 }
+
+QComboBox QAbstractItemView::item {
+    background-color: #334155;
+    padding: 8px 12px;
+    border-bottom: 1px solid #475569;
+    min-height: 20px;
+}
+
+QComboBox QAbstractItemView::item:hover {
+    background-color: #3b4a62;
+}
+
+QComboBox QAbstractItemView::item:selected {
+    background-color: #2563eb;
+    color: white;
+}
+
+
 
 /* Buttons - Modern Flat Design */
 QPushButton {

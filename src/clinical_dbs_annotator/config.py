@@ -9,7 +9,7 @@ from typing import Dict, List, Tuple
 
 # Application metadata
 APP_NAME = "BML Annotator for DBS clinical programming sessions"
-APP_VERSION = "v0.1"
+APP_VERSION = "v0.2"
 ORGANIZATION_NAME = "BML"
 
 # File paths (relative to executable)
@@ -155,7 +155,7 @@ PLACEHOLDERS = {
     "contact": "e#",
     "amplitude": "mA",
     "pulse_width": "µs",
-    "scale_value": "value",
+    "scale_value": "Value",
     "scale_name": "Name",
     "scale_score": "Score",
     "scale_min": "Min",

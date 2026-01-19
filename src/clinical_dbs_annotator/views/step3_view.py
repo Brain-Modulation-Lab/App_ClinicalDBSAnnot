@@ -28,7 +28,7 @@ from ..config import (
     SESSION_SCALE_LIMITS,
     STIMULATION_LIMITS,
 )
-from ..ui import IncrementWidget, create_horizontal_line, MultiSelectComboBox
+from ..ui import IncrementWidget, create_horizontal_line, MultiSelectComboBoxWithDisplay
 from .base_view import BaseStepView
 
 
@@ -173,26 +173,26 @@ class Step3View(BaseStepView):
         )
         form.addRow(QLabel("Stimulation frequency:"), left_freq_widget)
 
-        # Left Anode (-)
-        self.session_left_anode_combo = MultiSelectComboBox()
+        # Left Anode (+)
+        self.session_left_anode_combo = MultiSelectComboBoxWithDisplay()
         self.session_left_anode_combo.setMaximumWidth(150)
         self.session_left_anode_combo.addItems([
-            "ground", "0", "1a", "1b", "1c", "1-all",
-            "2a", "2b", "2c", "2-all", "3"
+            "case", "0 ring", "1 ring", "1a", "1b", "1c",
+            "2 ring", "2a", "2b", "2c", "3 ring"
         ])
-        anode_label = QLabel("Anode (-):")
+        anode_label = QLabel("Anode (+):")
         form.addRow(anode_label, self.session_left_anode_combo)
 
-        # Left Cathode (+)
-        self.session_left_cathode_combo = MultiSelectComboBox()
+        # Left Cathode (-)
+        self.session_left_cathode_combo = MultiSelectComboBoxWithDisplay()
         self.session_left_cathode_combo.setMaximumWidth(150)
         self.session_left_cathode_combo.addItems([
-            "ground", "0", "1a", "1b", "1c", "1-all",
-            "2a", "2b", "2c", "2-all", "3"
+            "case", "0 ring", "1 ring", "1a", "1b", "1c",
+            "2 ring", "2a", "2b", "2c", "3 ring"
         ])
         # Set ground as default for cathode
         self.session_left_cathode_combo.set_selected_items(["ground"])
-        cathode_label = QLabel("Cathode (+):")
+        cathode_label = QLabel("Cathode (-):")
         form.addRow(cathode_label, self.session_left_cathode_combo)
 
         # Left amplitude
@@ -251,26 +251,26 @@ class Step3View(BaseStepView):
         )
         form.addRow(QLabel("Stimulation frequency:"), right_freq_widget)
 
-        # Right Anode (-)
-        self.session_right_anode_combo = MultiSelectComboBox()
+        # Right Anode (+)
+        self.session_right_anode_combo = MultiSelectComboBoxWithDisplay()
         self.session_right_anode_combo.setMaximumWidth(150)
         self.session_right_anode_combo.addItems([
-            "ground", "0", "1a", "1b", "1c", "1-all",
-            "2a", "2b", "2c", "2-all", "3"
+            "case", "0 ring", "1 ring", "1a", "1b", "1c",
+            "2 ring", "2a", "2b", "2c", "3 ring"
         ])
-        anode_label_r = QLabel("Anode (-):")
+        anode_label_r = QLabel("Anode (+):")
         form.addRow(anode_label_r, self.session_right_anode_combo)
 
-        # Right Cathode (+)
-        self.session_right_cathode_combo = MultiSelectComboBox()
+        # Right Cathode (-)
+        self.session_right_cathode_combo = MultiSelectComboBoxWithDisplay()
         self.session_right_cathode_combo.setMaximumWidth(150)
         self.session_right_cathode_combo.addItems([
-            "ground", "0", "1a", "1b", "1c", "1-all",
-            "2a", "2b", "2c", "2-all", "3"
+            "case", "0 ring", "1 ring", "1a", "1b", "1c",
+            "2 ring", "2a", "2b", "2c", "3 ring"
         ])
         # Set ground as default for cathode
         self.session_right_cathode_combo.set_selected_items(["ground"])
-        cathode_label_r = QLabel("Cathode (+):")
+        cathode_label_r = QLabel("Cathode (-):")
         form.addRow(cathode_label_r, self.session_right_cathode_combo)
 
         # Right amplitude
