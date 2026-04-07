@@ -1,5 +1,5 @@
 version = 1
-revision = 2
+revision = 3
 requires-python = ">=3.11"
 resolution-markers = [
     "python_full_version >= '3.12'",
@@ -207,18 +207,16 @@ version = "0.1.0"
 source = { editable = "." }
 dependencies = [
     { name = "docx2pdf" },
-    { name = "nuitka" },
     { name = "pandas" },
     { name = "pydantic" },
-    { name = "pyinstaller" },
     { name = "pyqt5" },
-    { name = "pyqt5-qt5" },
     { name = "python-docx" },
     { name = "pytz" },
 ]
 
 [package.optional-dependencies]
 build = [
+    { name = "nuitka" },
     { name = "opencv-python-headless" },
     { name = "pyinstaller" },
 ]
@@ -245,15 +243,13 @@ dev = [
 requires-dist = [
     { name = "black", marker = "extra == 'dev'", specifier = ">=24.0.0" },
     { name = "docx2pdf", specifier = ">=0.1.8" },
-    { name = "nuitka", specifier = ">=4.0.7" },
+    { name = "nuitka", marker = "extra == 'build'", specifier = ">=4.0.7" },
     { name = "opencv-python-headless", marker = "extra == 'build'", specifier = ">=4.12.0.88" },
     { name = "pandas", specifier = ">=2.1" },
     { name = "pre-commit", marker = "extra == 'dev'", specifier = ">=3.6" },
     { name = "pydantic", specifier = ">=2.0" },
-    { name = "pyinstaller", specifier = ">=6.15.0" },
     { name = "pyinstaller", marker = "extra == 'build'", specifier = ">=6.15.0" },
-    { name = "pyqt5", specifier = "==5.15.10" },
-    { name = "pyqt5-qt5", specifier = "==5.15.2" },
+    { name = "pyqt5" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0.0" },
     { name = "pytest-cov", marker = "extra == 'dev'", specifier = ">=4.1.0" },
     { name = "pytest-qt", marker = "extra == 'dev'", specifier = ">=4.4.0" },

@@ -22,8 +22,7 @@ classifiers = [
 ]
 
 dependencies = [
-    "pyqt5==5.15.10",
-    "pyqt5-qt5==5.15.2",
+    "pyqt5",
     "pytz>=2025.2",
     "pandas>=2.1",
     "python-docx>=1.1",
