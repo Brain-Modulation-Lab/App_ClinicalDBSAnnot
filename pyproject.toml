@@ -106,11 +106,6 @@ ignore = [
     "E501",  # line too long (handled by formatter/line-length)
 ]
 
-[tool.ruff.format]
-quote-style = "double"
-indent-style = "space"
-line-ending = "auto"
-
 [tool.mypy]
 python_version = "3.11"
 warn_return_any = true

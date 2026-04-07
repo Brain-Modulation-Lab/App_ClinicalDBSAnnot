@@ -10,46 +10,44 @@ import os
 from PyQt5.QtCore import QSize, Qt
 from PyQt5.QtGui import QIcon, QPixmap
 from PyQt5.QtWidgets import (
-    QApplication,
-    QMainWindow,
-    QMessageBox,
     QDialog,
-    QVBoxLayout,
+    QFrame,
     QHBoxLayout,
     QLabel,
+    QMessageBox,
     QPushButton,
-    QTextEdit,
     QScrollArea,
-    QFrame,
-    QWidget,
     QSizePolicy,
+    QSpacerItem,
     QStackedWidget,
     QStyle,
-    QSpacerItem,
+    QTextEdit,
+    QVBoxLayout,
+    QWidget,
 )
 
 from ..config import (
     APP_NAME,
     APP_VERSION,
+    BASE_DPI,
     CLINICAL_SCALES_PRESETS,
     FONT_SCALE_ENABLED,
-    BASE_DPI,
     ICON_FILENAME,
     ICONS_DIR,
-    WINDOW_SIZE_RATIO,
     RESPONSIVE_WINDOW_RATIOS,
     SCREEN_SIZE_THRESHOLDS,
-    WINDOW_MIN_SIZE,
     WINDOW_MAX_SIZE_RATIO,
+    WINDOW_MIN_SIZE,
+    WINDOW_SIZE_RATIO,
 )
 from ..controllers import WizardController
-from ..utils import resource_path, get_theme_manager, rounded_pixmap
+from ..utils import get_theme_manager, resource_path, rounded_pixmap
+from .annotations_simple_view import AnnotationsFileView, AnnotationsSessionView
+from .longitudinal_file_view import LongitudinalFileView
 from .step0_view import Step0View
 from .step1_view import Step1View
 from .step2_view import Step2View
 from .step3_view import Step3View
-from .annotations_simple_view import AnnotationsFileView, AnnotationsSessionView
-from .longitudinal_file_view import LongitudinalFileView
 
 
 class WizardWindow(QWidget):
@@ -144,7 +142,7 @@ class WizardWindow(QWidget):
 
         # Make window resizable
         self.setWindowFlag(Qt.WindowMaximizeButtonHint, True)
-        
+
         # Set smaller size for step 0 (mode selection)
         self._update_window_size_for_step0()
 
@@ -217,17 +215,17 @@ class WizardWindow(QWidget):
         title_container = QVBoxLayout()
         title_container.setSpacing(0)  # Ridotto spacing tra titolo e sottotitolo
         title_container.setContentsMargins(0, 2, 0, 0)  # Margini più stretti
-        
+
         self.header_title_label = QLabel("")
         self.header_title_label.setStyleSheet("font-size: 12pt; font-weight: 500;")
         self.header_title_label.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
         title_container.addWidget(self.header_title_label)
-        
+
         self.header_subtitle_label = QLabel("")
         self.header_subtitle_label.setStyleSheet("font-size: 8pt; color: #64748b; margin-top: -2px;")
         self.header_subtitle_label.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
         title_container.addWidget(self.header_subtitle_label)
-        
+
         header_layout.addLayout(title_container)
         header_layout.addStretch()  # Push buttons to the right
 
@@ -296,7 +294,7 @@ class WizardWindow(QWidget):
         if not hasattr(self, "header_title_label"):
             return
         self.header_title_label.setText(self._get_current_header_title())
-        
+
         if hasattr(self, "header_subtitle_label"):
             subtitle = self._get_current_header_subtitle()
             self.header_subtitle_label.setText(subtitle)
@@ -320,14 +318,14 @@ class WizardWindow(QWidget):
         dialog.setWindowTitle("About Clinical DBS Annotator")
         dialog.setMinimumSize(600, 500)
         dialog.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        
+
         layout = QVBoxLayout(dialog)
-        
+
         # Title and version
         title_label = QLabel(f"<h2>{APP_NAME} v{APP_VERSION}</h2>")
         title_label.setAlignment(Qt.AlignCenter)
         layout.addWidget(title_label)
-        
+
         # Description
         desc_text = QTextEdit()
         desc_text.setReadOnly(True)
@@ -370,9 +368,9 @@ class WizardWindow(QWidget):
         <p>This software is released under an open-source license. Please see the GitHub repository 
         for detailed licensing information.</p>
         """)
-        
+
         layout.addWidget(desc_text)
-        
+
         # Close button
         button_layout = QHBoxLayout()
         button_layout.addStretch()
@@ -381,7 +379,7 @@ class WizardWindow(QWidget):
         close_btn.clicked.connect(dialog.accept)
         button_layout.addWidget(close_btn)
         layout.addLayout(button_layout)
-        
+
         dialog.exec_()
 
     def _toggle_theme(self) -> None:
@@ -465,7 +463,10 @@ class WizardWindow(QWidget):
             return
 
         # Show scale optimization dialog
-        from .longitudinal_scale_dialog import LongitudinalScaleDialog, ReportSectionsDialog
+        from .longitudinal_scale_dialog import (
+            LongitudinalScaleDialog,
+            ReportSectionsDialog,
+        )
         dialog = LongitudinalScaleDialog(scales, self)
         if dialog.exec_() != dialog.Accepted:
             return
@@ -500,13 +501,13 @@ class WizardWindow(QWidget):
             self.step1_view = Step1View(self.style())
             self.stack.addWidget(self.step1_view)
             self._connect_step1_signals()
-        
+
         if self.step2_view is None:
             from .step2_view import Step2View
             self.step2_view = Step2View(self.style())
             self.stack.addWidget(self.step2_view)
             self._connect_step2_signals()
-            
+
         if self.step3_view is None:
             from .step3_view import Step3View
             self.step3_view = Step3View(self.style())
@@ -520,7 +521,7 @@ class WizardWindow(QWidget):
             self.annotations_file_view = AnnotationsFileView(self)
             self.stack.addWidget(self.annotations_file_view)
             self._connect_annotations_file_signals()
-        
+
         if self.annotations_session_view is None:
             from .annotations_simple_view import AnnotationsSessionView
             self.annotations_session_view = AnnotationsSessionView(self)
@@ -554,7 +555,7 @@ class WizardWindow(QWidget):
         self.setGeometry(x, y, compact_width, compact_height)
         self.setMinimumSize(compact_width, compact_height)
         self.setMaximumSize(compact_width, compact_height)
-    
+
     def _update_window_size_for_main_workflow(self) -> None:
         """Restore normal window size for main workflow (steps 1+)."""
         # Restore normal size policies and remove fixed constraints from step0
@@ -582,11 +583,11 @@ class WizardWindow(QWidget):
         # Center the normal window
         x = int((screen_width - width) / 2)
         y = int((screen_height - height) / 2)
-        
+
         # Reset constraints first to avoid min/max conflicts
         self.setMinimumSize(1, 1)
         self.setMaximumSize(16777215, 16777215)  # Qt max size
-        
+
         # Apply new geometry and constraints (allow full maximization)
         self.setGeometry(x, y, width, height)
         self.setMinimumSize(WINDOW_MIN_SIZE["width"], WINDOW_MIN_SIZE["height"])
@@ -759,13 +760,13 @@ class WizardWindow(QWidget):
         widgets = []
         if hasattr(current, "next_button"):
             widgets.append(current.next_button)
-        
+
         if hasattr(current, "insert_button"):
             widgets.append(current.insert_button)
-        
+
         if hasattr(current, "export_button"):
             widgets.append(current.export_button)
-        
+
         if hasattr(current, "close_button"):
             widgets.append(current.close_button)
 
