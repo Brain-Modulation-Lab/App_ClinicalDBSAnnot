@@ -529,11 +529,11 @@ class Step3View(BaseStepView):
             for contact_idx in range(model.num_contacts):
                 # Check if this contact level is directional (has segments)
                 is_contact_directional = model.is_level_directional(contact_idx)
-                
+
                 if is_contact_directional:
                     # This contact has segments - check individual segments
                     seg_states = [canvas.contact_states.get((contact_idx, seg), ContactState.OFF) for seg in range(3)]
-                    
+
                     # Always show individual segments, never group them
                     seg_labels = ["a", "b", "c"]
                     for seg, seg_state in enumerate(seg_states):
@@ -563,25 +563,25 @@ class Step3View(BaseStepView):
         """Check if we have a single grouped directional contact (all 3 segments selected)."""
         if len(cathode_labels) != 1:
             return False
-        
+
         lbl = cathode_labels[0]
         # Check if this is a grouped contact (E1, E2, etc., not E1a, E1b)
         is_grouped = (len(lbl) >= 2 and lbl[0] == 'E' and lbl[1:].isdigit())
-        
+
         if not is_grouped:
             return False
-        
+
         # Verify that this contact actually has all 3 segments selected on the canvas
         try:
             contact_idx = int(lbl[1:])
             model = canvas.model
             if not model or not model.is_directional:
                 return False
-            
+
             # Check if this contact level is directional
             if not model.is_level_directional(contact_idx):
                 return False
-            
+
             # Check if all 3 segments are cathodic
             seg_states = [
                 canvas.contact_states.get((contact_idx, seg), ContactState.OFF)

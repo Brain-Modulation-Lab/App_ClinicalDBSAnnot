@@ -110,7 +110,7 @@ class AmplitudeSplitWidget(QWidget):
           e.g. ``"1.5_1.0"``.
         """
         total_text = self._amp_edit.text().strip()
-        
+
         # For single or no cathode, return total amplitude
         if len(self._cathode_labels) <= 1:
             return total_text
@@ -161,9 +161,9 @@ class AmplitudeSplitWidget(QWidget):
         self._clear_rows()
 
         # Check if we have a single grouped contact (E1, E2, etc.)
-        if (len(self._cathode_labels) == 1 and 
-            len(self._cathode_labels[0]) >= 2 and 
-            self._cathode_labels[0][0] == 'E' and 
+        if (len(self._cathode_labels) == 1 and
+            len(self._cathode_labels[0]) >= 2 and
+            self._cathode_labels[0][0] == 'E' and
             self._cathode_labels[0][1:].isdigit()):
             # Create segment rows for grouped contact
             self._create_segment_rows_only(self._cathode_labels[0])
@@ -233,7 +233,7 @@ class AmplitudeSplitWidget(QWidget):
 
         for seg_idx, seg_label in enumerate(seg_labels):
             seg_lbl = f"{parent_lbl}{seg_label}"
-            
+
             row_w = QWidget()
             row_layout = QHBoxLayout(row_w)
             row_layout.setContentsMargins(20, 0, 0, 0)  # Regular indentation (not extra)
@@ -285,7 +285,7 @@ class AmplitudeSplitWidget(QWidget):
             self._rows[seg_lbl] = (row_w, pct_edit, ma_label)
             self._layout.addWidget(row_w)
 
-    
+
     def _on_pct_edited(self, edited_label: str) -> None:
         """Called when user finishes editing a percentage field."""
         self._read_and_rebalance(edited_label)
@@ -437,7 +437,7 @@ def get_cathode_labels(canvas) -> list[str]:
         for contact_idx in range(model.num_contacts):
             # Check if this contact level is directional (has segments)
             is_contact_directional = model.is_level_directional(contact_idx)
-            
+
             if is_contact_directional:
                 # This contact has segments - check individual segments
                 seg_states = [

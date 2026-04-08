@@ -125,13 +125,13 @@ class Step1View(BaseStepView):
         """Check if a single cathode label represents a grouped directional contact."""
         if len(cathode_labels) != 1 or not canvas or not canvas.model:
             return False
-        
+
         lbl = cathode_labels[0]
         # Check if this is a grouped contact (no segment suffix) that could be directional
         if len(lbl) >= 2 and lbl[0] == 'E' and lbl[1:].isdigit():
             try:
                 contact_idx = int(lbl[1:])
-                return (canvas.model.is_directional and 
+                return (canvas.model.is_directional and
                        canvas.model.is_level_directional(contact_idx))
             except (ValueError, IndexError):
                 pass
@@ -635,7 +635,7 @@ class Step1View(BaseStepView):
             for contact_idx in range(model.num_contacts):
                 # Check if this contact level is directional (has segments)
                 is_contact_directional = model.is_level_directional(contact_idx)
-                
+
                 if is_contact_directional:
                     # This contact has segments - check individual segments
                     seg_states = [canvas.contact_states.get((contact_idx, seg), ContactState.OFF) for seg in range(3)]
