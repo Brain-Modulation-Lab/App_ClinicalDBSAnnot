@@ -1,4 +1,4 @@
-name: CD - Create GitHub Release (uv)
+name: CD - Create GitHub Release
 
 on:
   push:
@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   build-and-release:
-    name: Build package and publish GitHub Release (uv)
+    name: Build package and publish GitHub Release
     runs-on: ubuntu-latest
 
     steps:
@@ -20,7 +20,7 @@ jobs:
       - name: Set up uv with Python
         uses: astral-sh/setup-uv@v7
         with:
-          python-version: "3.11"
+          python-version: "3.14"
           enable-cache: true
 
       - name: Build distribution

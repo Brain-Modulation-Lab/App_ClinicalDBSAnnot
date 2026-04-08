@@ -1,4 +1,4 @@
-name: CI - Lint (uv)
+name: CI - Lint
 
 on:
   push:
@@ -10,7 +10,7 @@ on:
 
 jobs:
   lint:
-    name: Lint (ruff via uv)
+    name: Lint
     runs-on: ubuntu-latest
 
     steps:
@@ -20,10 +20,10 @@ jobs:
       - name: Set up uv with Python
         uses: astral-sh/setup-uv@v7
         with:
-          python-version: "3.11"
+          python-version: "3.14"
           enable-cache: true
 
-      - name: Sync dependencies with uv (locked, dev)
+      - name: Sync dependencies (locked, dev)
         run: |
           uv sync --locked --dev
 
