@@ -25,7 +25,7 @@ class ProgramConfigManager:
             # Default to logs folder in the application installation directory
             # For deployed app: C:\Program Files\BML\Clinical DBS Annotator\logs
             # For development: uses the source directory
-            if getattr(sys, 'frozen', False):
+            if getattr(sys, "frozen", False):
                 # Running as deployed executable (PyInstaller/Nuitka)
                 app_root = Path(sys.executable).parent
             else:
@@ -51,7 +51,7 @@ class ProgramConfigManager:
                 with open(self.config_file, encoding="utf-8") as f:
                     data = json.load(f)
                     self._custom_programs = data.get("custom_programs", [])
-            except (OSError, json.JSONDecodeError):
+            except OSError, json.JSONDecodeError:
                 self._custom_programs = []
         else:
             self._custom_programs = []
@@ -95,7 +95,11 @@ class ProgramConfigManager:
         Returns:
             True if added, False if already exists or invalid.
         """
-        if not program_name or program_name in self.DEFAULT_PROGRAMS or program_name in self._custom_programs:
+        if (
+            not program_name
+            or program_name in self.DEFAULT_PROGRAMS
+            or program_name in self._custom_programs
+        ):
             return False
 
         self._custom_programs.append(program_name)
@@ -133,7 +137,11 @@ class ProgramConfigManager:
         if old_name in self.DEFAULT_PROGRAMS:
             return False
 
-        if not new_name or new_name in self.DEFAULT_PROGRAMS or new_name in self._custom_programs:
+        if (
+            not new_name
+            or new_name in self.DEFAULT_PROGRAMS
+            or new_name in self._custom_programs
+        ):
             return False
 
         if old_name in self._custom_programs:

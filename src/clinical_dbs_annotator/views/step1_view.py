@@ -1057,7 +1057,11 @@ class Step1View(BaseStepView):
         input_layout.addWidget(new_program_edit)
 
         add_btn = QPushButton("Add")
-        add_btn.clicked.connect(lambda: self._add_program_to_list(new_program_edit.text(), list_widget, program_config))
+        add_btn.clicked.connect(
+            lambda: self._add_program_to_list(
+                new_program_edit.text(), list_widget, program_config
+            )
+        )
         input_layout.addWidget(add_btn)
         layout.addLayout(input_layout)
 
@@ -1070,8 +1074,16 @@ class Step1View(BaseStepView):
         layout.addLayout(button_layout)
 
         # Connect edit/remove buttons
-        edit_btn.clicked.connect(lambda: self._edit_selected_program(list_widget, program_config, default_programs))
-        remove_btn.clicked.connect(lambda: self._remove_selected_program(list_widget, program_config, default_programs))
+        edit_btn.clicked.connect(
+            lambda: self._edit_selected_program(
+                list_widget, program_config, default_programs
+            )
+        )
+        remove_btn.clicked.connect(
+            lambda: self._remove_selected_program(
+                list_widget, program_config, default_programs
+            )
+        )
 
         # Dialog buttons
         buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
@@ -1090,10 +1102,14 @@ class Step1View(BaseStepView):
             else:
                 self.group_combo.setCurrentText("None")
 
-    def _add_program_to_list(self, name: str, list_widget: QListWidget, program_config: ProgramConfigManager) -> None:
+    def _add_program_to_list(
+        self, name: str, list_widget: QListWidget, program_config: ProgramConfigManager
+    ) -> None:
         """Add a new program to the list."""
         if not name or name in ProgramConfigManager.DEFAULT_PROGRAMS:
-            QMessageBox.warning(self, "Error", "Program name cannot be empty or match default programs.")
+            QMessageBox.warning(
+                self, "Error", "Program name cannot be empty or match default programs."
+            )
             return
 
         if program_config.add_program(name):
@@ -1101,7 +1117,12 @@ class Step1View(BaseStepView):
         else:
             QMessageBox.warning(self, "Error", "Program name already exists.")
 
-    def _edit_selected_program(self, list_widget: QListWidget, program_config: ProgramConfigManager, default_programs: list[str]) -> None:
+    def _edit_selected_program(
+        self,
+        list_widget: QListWidget,
+        program_config: ProgramConfigManager,
+        default_programs: list[str],
+    ) -> None:
         """Edit the selected program name."""
         current_item = list_widget.currentItem()
         if not current_item:
@@ -1111,10 +1132,14 @@ class Step1View(BaseStepView):
         old_name = current_item.text()
         from PySide6.QtWidgets import QInputDialog
 
-        new_name, ok = QInputDialog.getText(self, "Edit Program", "New program name:", QLineEdit.Normal, old_name)
+        new_name, ok = QInputDialog.getText(
+            self, "Edit Program", "New program name:", QLineEdit.Normal, old_name
+        )
         if ok and new_name:
             if new_name in default_programs:
-                QMessageBox.warning(self, "Error", "Cannot rename to a default program name.")
+                QMessageBox.warning(
+                    self, "Error", "Cannot rename to a default program name."
+                )
                 return
 
             if program_config.update_program(old_name, new_name):
@@ -1122,7 +1147,12 @@ class Step1View(BaseStepView):
             else:
                 QMessageBox.warning(self, "Error", "Failed to update program name.")
 
-    def _remove_selected_program(self, list_widget: QListWidget, program_config: ProgramConfigManager, default_programs: list[str]) -> None:
+    def _remove_selected_program(
+        self,
+        list_widget: QListWidget,
+        program_config: ProgramConfigManager,
+        default_programs: list[str],
+    ) -> None:
         """Remove the selected program name."""
         current_item = list_widget.currentItem()
         if not current_item:
@@ -1134,7 +1164,12 @@ class Step1View(BaseStepView):
             QMessageBox.warning(self, "Error", "Cannot remove default programs.")
             return
 
-        reply = QMessageBox.question(self, "Confirm", f"Remove program '{name}'?", QMessageBox.Yes | QMessageBox.No)
+        reply = QMessageBox.question(
+            self,
+            "Confirm",
+            f"Remove program '{name}'?",
+            QMessageBox.Yes | QMessageBox.No,
+        )
         if reply == QMessageBox.Yes:
             if program_config.remove_program(name):
                 list_widget.takeItem(list_widget.row(current_item))
@@ -1382,7 +1417,6 @@ class Step1View(BaseStepView):
     def create_new_file(self) -> None:
         """Create new file with BIDS-style naming."""
         from datetime import datetime
-
 
         # First, ask for patient ID and session number
         dialog = QDialog(self)
