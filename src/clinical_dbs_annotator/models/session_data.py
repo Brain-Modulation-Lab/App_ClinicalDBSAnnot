@@ -9,7 +9,6 @@ import csv
 from datetime import datetime
 from pathlib import Path
 from typing import TextIO
-
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from ..config import TIMEZONE, TSV_COLUMNS

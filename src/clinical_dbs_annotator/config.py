@@ -9,7 +9,6 @@ from __future__ import annotations
 
 from .version import get_version
 
-
 APP_NAME = "Clinical DBS Annotator"
 APP_VERSION = get_version()
 ORGANIZATION_NAME = "BML"
@@ -101,7 +100,7 @@ SESSION_SCALE_LIMITS = {
 CLINICAL_SCALES_PRESETS: dict[str, list[str]] = {
     "OCD": [
         "Y-BOCS",   # Yale–Brown Obsessive–Compulsive Scale
-        "Y-BOCS-o", "Y-BOCS-c", 
+        "Y-BOCS-o", "Y-BOCS-c",
         "MADRS",    # Montgomery–Åsberg Depression Rating Scale
         "OCI-R",    # Obsessive–Compulsive Inventory – Revised
     ],
@@ -133,7 +132,7 @@ CLINICAL_SCALES_PRESETS: dict[str, list[str]] = {
 }
 
 SESSION_SCALES_PRESETS: dict[str, list[tuple[str, str, str]]] = {
-    "OCD": [        
+    "OCD": [
         ("Obsessions", "0", "10"),
         ("Compulsions", "0", "10"),
         ("Anxiety", "0", "10"),
@@ -150,12 +149,12 @@ SESSION_SCALES_PRESETS: dict[str, list[tuple[str, str, str]]] = {
         ("Tremor", "0", "10"),
         ("Rigidity", "0", "10"),
         ("Bradykinesia", "0", "10"),
-        ("Dyskinesia", "0", "10"),        
+        ("Dyskinesia", "0", "10"),
         ("Gait / balance", "0", "10"),
         ("Paresthesia", "0", "10"),
         ("Speech difficulty", "0", "10"),
     ],
-    "ET": [        
+    "ET": [
         ("Action tremor", "0", "10"),
         ("Resting tremor", "0", "10"),
         ("Paresthesia", "0", "10"),

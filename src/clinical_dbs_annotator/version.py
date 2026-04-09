@@ -11,7 +11,6 @@ import re
 from importlib import metadata
 from pathlib import Path
 
-
 _DIST_NAME = "clinical-dbs-annotator"
 
 
@@ -24,12 +23,12 @@ def get_version() -> str:
     """
     try:
         return metadata.version(_DIST_NAME)
-    except Exception:
+    except Exception as e:
         init_path = Path(__file__).with_name("__init__.py")
         text = init_path.read_text(encoding="utf-8")
         m = re.search(r'^__version__\s*=\s*["\']([^"\']+)["\']\s*$', text, flags=re.MULTILINE)
         if not m:
-            raise RuntimeError(f"Could not determine version from {init_path}")
+            raise RuntimeError(f"Could not determine version from {init_path}") from e
         return m.group(1)
 
 
