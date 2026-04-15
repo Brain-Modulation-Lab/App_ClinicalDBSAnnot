@@ -1,7 +1,7 @@
 """
 Shared chart utilities for report generation.
 
-Provides reusable functions for building pyqtgraph-based scale timeline
+Provides reusable functions for building matplotlib-based scale timeline
 charts used by both the session and longitudinal exporters.  Centralising
 the chart logic avoids code duplication and guarantees consistent styling
 across report types.
@@ -9,19 +9,24 @@ across report types.
 
 from __future__ import annotations
 
+import logging
 from io import BytesIO
 from typing import Any
 
+import matplotlib
+import matplotlib.pyplot as plt
+import numpy as np
 from docx.document import Document
 from docx.shared import Inches
 from matplotlib import cm
-from pyqtgraph import AxisItem
-from PySide6.QtCore import QRectF
-from PySide6.QtGui import QPainter
 
-# ── Colour constants ────────────────────────────────────────────────
-BEST_GREEN = (150, 210, 160, 160)  # RGBA – darker green for best config
-SECOND_GREEN = (200, 235, 205, 130)  # RGBA – lighter green for second-best
+matplotlib.use("Agg")
+
+logger = logging.getLogger(__name__)
+
+# ── Colour constants (normalised 0-1 RGBA for matplotlib) ─────────
+BEST_GREEN = (150 / 255, 210 / 255, 160 / 255, 160 / 255)
+SECOND_GREEN = (200 / 255, 235 / 255, 205 / 255, 130 / 255)
 
 
 # ── Scale-target helpers ────────────────────────────────────────────
@@ -55,12 +60,12 @@ def parse_scale_targets(
     return targets
 
 
-def compute_general_index(
+def compute_aggregate_index(
     scale_data: dict[str, dict[int, float]],
     all_points: list[int],
     scale_targets: dict[str, dict[str, Any]],
 ) -> dict[int, float]:
-    """Compute a weighted general-index value per x-point.
+    """Compute a weighted aggregate-index value per x-point.
 
     The index represents how close the scales are to their respective
     targets (1.0 = perfect, 0.0 = worst observed).
@@ -125,7 +130,7 @@ def compute_general_index(
 def find_best_and_second(
     index_vals: dict[int, float],
 ) -> tuple[int | None, int | None]:
-    """Return the x-points with the best and second-best general-index scores.
+    """Return the x-points with the best and second-best aggregate-index scores.
 
     Returns:
         (best_x, second_best_x) – either may be *None*.
@@ -140,28 +145,8 @@ def find_best_and_second(
 
 # ── Chart rendering ────────────────────────────────────────────────
 
-
-class RotatedAxisItem(AxisItem):
-    def __init__(self, orientation, angle=0, **kwargs):
-        super().__init__(orientation, **kwargs)
-        self.angle = angle
-
-    def drawPicture(self, p: QPainter, axisSpec, tickSpecs, textSpecs):  # noqa: N802, N803
-        super().drawPicture(p, axisSpec, tickSpecs, [])
-
-        # Find maximum label width for consistent vertical offset
-        max_width = max((rect.width() for rect, _, _ in textSpecs), default=0)
-
-        # Rotate ticks labels
-        for rect, flags, text in textSpecs:
-            p.save()
-            # Translate to tick mark position (bottom-left of original rect), then rotate counter-clockwise
-            p.translate(rect.bottomLeft())
-            p.rotate(self.angle)
-            # Draw text extending downward, offset by max_width for consistent alignment
-            new_rect = QRectF(0, -max_width, rect.width(), rect.height())
-            p.drawText(new_rect, flags, text)
-            p.restore()
+# Matplotlib line styles matching the old set
+_LINE_STYLES = ["-", "--", ":", "-.", (0, (3, 1, 1, 1, 1, 1))]
 
 
 def build_scales_chart(
@@ -181,9 +166,9 @@ def build_scales_chart(
 
     The chart includes:
     * Rainbow-coloured individual scale lines
-    * A thick black General Index line (when *show_general_index* and ≥ 2 scales)
+    * A thick black Aggregate Index line (when *show_general_index* and ≥ 2 scales)
     * Green vertical bands for best (dark) and second-best (light)
-    * A compact legend anchored at the **top-right** of the plot
+    * A compact legend above the plot
 
     Args:
         scale_data:          {scale_name: {x_point: value}}
@@ -194,152 +179,162 @@ def build_scales_chart(
         x_ticks:             optional custom bottom-axis ticks
         width:               image width in px
         height:              image height in px
-        show_general_index:  whether to draw the General Index line
-        rotate_x_ticks:      whether to rotate x-axis tick labels by 70 degrees
+        show_general_index:  whether to draw the Aggregate Index line
+        rotate_x_ticks:      whether to rotate x-axis tick labels by 90 degrees
 
     Returns:
         PNG image bytes, or *None* on failure.
     """
     try:
-        import pyqtgraph as pg
-        from PySide6.QtCore import QBuffer, QIODevice, Qt
-        from PySide6.QtGui import QBrush, QColor, QFont, QPen
-
-        pg.setConfigOptions(useOpenGL=False, antialias=True)
-
         n_scales = len(scale_data)
         if n_scales == 0:
             return None
 
-        # Get colors from matplotlib dark2 colormap
-        cmap = cm.get_cmap("Dark2")
-        colors = []
-        for i in range(n_scales):
-            rgba = cmap(i % cmap.N)
-            colors.append(QColor.fromRgbF(*rgba[:3]))
+        dpi = 100
+        fig_w = width / dpi
+        # Increase height when rotating ticks
+        actual_height = height + 150 if rotate_x_ticks else height
+        fig_h = actual_height / dpi
 
-        # Line styles for each curve
-        line_styles = [
-            Qt.SolidLine,
-            Qt.DashLine,
-            Qt.DotLine,
-            Qt.DashDotLine,
-            Qt.DashDotDotLine,
-        ]
+        cmap_obj = cm.get_cmap("Dark2")
+        colors = [cmap_obj(i % cmap_obj.N)[:3] for i in range(n_scales)]
 
         has_index = show_general_index and n_scales >= 2
-        total_items = n_scales + (1 if has_index else 0)
 
-        win = pg.GraphicsLayoutWidget()
-        win.setBackground("w")
-        # Increase height when rotating ticks to compensate for larger bottom margin
-        actual_height = height + 150 if rotate_x_ticks else height
-        win.resize(width, actual_height)
+        fig, ax1 = plt.subplots(figsize=(fig_w, fig_h), dpi=dpi)
+        fig.patch.set_facecolor("white")
+        ax1.set_facecolor("white")
 
-        # Legend in a dedicated row above the plot (compact)
-        legend = pg.LegendItem(
-            offset=(0, 0),
-            colCount=max(1, total_items),
-        )
-        legend.setBrush(QBrush(QColor(255, 255, 255, 220)))
-        legend.setPen(QPen(QColor(150, 150, 150, 100), 1))
-        legend.setLabelTextColor("k")
-        win.addItem(legend, row=0, col=0)
-        win.ci.layout.setRowStretchFactor(0, 0)  # legend row: no stretch
-        win.ci.layout.setRowStretchFactor(1, 1)  # plot row: takes space
-
-        p1 = win.addPlot(row=1, col=0)
-
-        if rotate_x_ticks:
-            axis = RotatedAxisItem(orientation="bottom", angle=-90)
-            axis.linkToView(p1.getViewBox())
-            p1.setAxisItems({"bottom": axis})
-            p1.layout.setContentsMargins(10, 10, 10, 200)
-
-        if title:
-            p1.setTitle(title, color="k", size="16pt", font="Arial")
-        p1.setLabel("left", y_label, color="k", **{"font-size": "16pt"})
-        p1.setLabel("bottom", x_label, color="k", **{"font-size": "16pt"})
-        p1.getAxis("left").setStyle(tickFont=QFont("Arial", 10))
-        p1.getAxis("bottom").setStyle(tickFont=QFont("Arial", 10))
-
-        if x_ticks is not None:
-            p1.getAxis("bottom").setTicks([x_ticks])
-        p1.showGrid(x=True, y=True, alpha=0.3)
+        # ── Collect all x-points for NaN gap handling ─────────────
+        all_x = sorted({x for pts in scale_data.values() for x in pts})
 
         # ── Plot individual scales ──────────────────────────────────
         for idx, (sname, pts) in enumerate(scale_data.items()):
             c = colors[idx]
-            ls = line_styles[idx % len(line_styles)]
-            xs = sorted(pts.keys())
-            ys = [pts[x] for x in xs]
-            curve = p1.plot(
-                xs,
-                ys,
-                pen=pg.mkPen(c, width=2, style=ls),
-                symbol="o",
-                symbolPen=pg.mkPen(c, width=1),
-                symbolBrush=pg.mkBrush(c),
-                symbolSize=8,
+            ls = _LINE_STYLES[idx % len(_LINE_STYLES)]
+            ys = [pts.get(x, float("nan")) for x in all_x]
+            # Build segment arrays so NaN creates gaps in lines
+            xs_arr = np.array(all_x, dtype=float)
+            ys_arr = np.array(ys, dtype=float)
+            ax1.plot(
+                xs_arr,
+                ys_arr,
+                color=c,
+                linewidth=2,
+                linestyle=ls,
+                marker="o",
+                markersize=6,
+                markerfacecolor=c,
+                markeredgecolor=c,
+                markeredgewidth=1,
+                label=sname,
             )
-            legend.addItem(curve, sname)
 
-        # ── General Index ───────────────────────────────────────────
+        # ── Aggregate Index on right y-axis ────────────────────────
         best_x: int | None = None
         second_x: int | None = None
+        ax2 = None
         if has_index:
             all_points = sorted({x for pts in scale_data.values() for x in pts})
             scale_targets = parse_scale_targets(scale_prefs)
-            index_vals = compute_general_index(scale_data, all_points, scale_targets)
+            index_vals = compute_aggregate_index(scale_data, all_points, scale_targets)
 
             if index_vals:
+                ax2 = ax1.twinx()
                 ix = sorted(index_vals.keys())
                 iy = [index_vals[x] for x in ix]
-                gi_curve = p1.plot(
+                ax2.plot(
                     ix,
                     iy,
-                    pen=pg.mkPen("k", width=5),
-                    symbol="d",
-                    symbolPen="k",
-                    symbolBrush="k",
-                    symbolSize=10,
+                    color="black",
+                    linewidth=3,
+                    marker="D",
+                    markersize=7,
+                    markerfacecolor="black",
+                    markeredgecolor="black",
+                    label="Aggregate Index",
+                    zorder=5,
                 )
-                legend.addItem(gi_curve, "General Index")
+                ax2.set_ylim(0, 1)
+                ax2.set_ylabel(
+                    "Aggregate Index Score",
+                    fontsize=12,
+                    fontfamily="Arial",
+                    color="black",
+                )
+                ax2.tick_params(axis="y", labelsize=10)
                 best_x, second_x = find_best_and_second(index_vals)
 
         # ── Best / second-best green vertical bands ─────────────────
-        def _add_band(x_val: int, rgba: tuple) -> None:
-            band = pg.LinearRegionItem(
-                values=(x_val - 0.35, x_val + 0.35),
-                orientation="vertical",
-                brush=QBrush(QColor(*rgba)),
-                pen=pg.mkPen(QColor(100, 180, 100, 120), width=1),
-                movable=False,
-            )
-            band.setZValue(-10)
-            p1.addItem(band)
-
         if best_x is not None:
-            _add_band(best_x, BEST_GREEN)
+            ax1.axvspan(best_x - 0.35, best_x + 0.35, color=BEST_GREEN, zorder=0)
         if second_x is not None and second_x != best_x:
-            _add_band(second_x, SECOND_GREEN)
+            ax1.axvspan(second_x - 0.35, second_x + 0.35, color=SECOND_GREEN, zorder=0)
+
+        # ── Axes labels and styling ─────────────────────────────────
+        if title:
+            ax1.set_title(title, fontsize=16, fontfamily="Arial", color="black")
+        ax1.set_ylabel(y_label, fontsize=12, fontfamily="Arial", color="black")
+        ax1.set_xlabel(x_label, fontsize=12, fontfamily="Arial", color="black")
+        ax1.tick_params(axis="both", labelsize=10)
+        ax1.grid(True, alpha=0.3)
+
+        # ── X-ticks ─────────────────────────────────────────────────
+        if x_ticks is not None:
+            tick_positions = [t[0] for t in x_ticks]
+            tick_labels = [t[1] for t in x_ticks]
+            ax1.set_xticks(tick_positions)
+            if rotate_x_ticks:
+                ax1.set_xticklabels(
+                    tick_labels,
+                    rotation=90,
+                    ha="center",
+                    fontsize=10,
+                )
+            else:
+                ax1.set_xticklabels(tick_labels, fontsize=10)
+
+        # Ensure x-range includes all tick positions with padding
+        if x_ticks:
+            x_min = min(t[0] for t in x_ticks) - 0.5
+            x_max = max(t[0] for t in x_ticks) + 0.5
+            ax1.set_xlim(x_min, x_max)
+
+        # ── Legend ──────────────────────────────────────────────────
+        handles1, labels1 = ax1.get_legend_handles_labels()
+        handles2, labels2 = ([], [])
+        if ax2 is not None:
+            handles2, labels2 = ax2.get_legend_handles_labels()
+        all_handles = handles1 + handles2
+        all_labels = labels1 + labels2
+        if all_handles:
+            n_cols = max(1, len(all_handles))
+            fig.legend(
+                all_handles,
+                all_labels,
+                loc="upper center",
+                ncol=n_cols,
+                fontsize=9,
+                frameon=True,
+                facecolor="white",
+                edgecolor=(0.6, 0.6, 0.6, 0.4),
+                framealpha=0.9,
+                bbox_to_anchor=(0.5, 1.0),
+            )
+
+        fig.tight_layout(rect=[0, 0, 1, 0.93])
 
         # ── Export to PNG bytes ─────────────────────────────────────
-        pixmap = win.grab()
-        qbuf = QBuffer()
-        qbuf.open(QIODevice.OpenModeFlag.WriteOnly)
-        pixmap.save(qbuf, "PNG")
-        qbuf.close()
-        png_bytes = bytes(qbuf.data())
-
-        win.close()
-        del win
+        buf = BytesIO()
+        fig.savefig(buf, format="png", dpi=dpi, bbox_inches="tight", facecolor="white")
+        plt.close(fig)
+        buf.seek(0)
+        png_bytes = buf.read()
+        buf.close()
         return png_bytes
 
     except Exception as exc:
-        import logging
-
-        logging.getLogger(__name__).exception("build_scales_chart failed: %s", exc)
+        logger.exception("build_scales_chart failed: %s", exc)
         return None
 
 

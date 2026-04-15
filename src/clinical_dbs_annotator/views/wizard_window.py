@@ -491,12 +491,12 @@ class WizardWindow(QWidget):
 
         # Show section selection dialog
         session_data_children = [
-            ("session_data_overview_graph", "Session Data Overview Graph", True),
-            ("session_data_complete_table", "Session Data Complete Table", True),
+            ("session_data_graph", "Session Data Graph", True),
+            ("session_data_table", "Session Data Table", False),
         ]
         section_defs = [
             ("sessions_overview", "Sessions Overview", True, None),
-            ("session_data", "Session Data", True, session_data_children),
+            ("session_data", "Session Data", False, session_data_children),
             ("electrode_config", "Electrode Configuration", False, None),
             ("programming_summary", "Programming Summary", False, None),
         ]
@@ -759,8 +759,8 @@ class WizardWindow(QWidget):
         from .export_dialog import ReportSectionsDialog
 
         session_data_children = [
-            ("session_data_overview_graph", "Session Data Overview Graph", True),
-            ("session_data_complete_table", "Session Data Complete Table", True),
+            ("session_data_graph", "Session Data Graph", True),
+            ("session_data_table", "Session Data Table", True),
         ]
         section_defs = [
             ("initial_notes", "Initial Clinical Notes", True, None),

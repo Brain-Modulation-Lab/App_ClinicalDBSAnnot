@@ -548,7 +548,13 @@ class SessionExporter:
 
         return pd.DataFrame(lateral_data)
 
-    def _add_session_data_table(self, doc: Document, df_table: pd.DataFrame) -> None:
+    def _add_session_data_table(
+        self,
+        doc: Document,
+        df_table: pd.DataFrame,
+        with_chart: bool = True,
+        with_table: bool = True,
+    ) -> None:
         """Add the lateral session-data table to the Word document."""
         doc.add_heading("Session Data", level=1)
 
@@ -559,7 +565,11 @@ class SessionExporter:
         lateral_df = self._create_lateral_table_data(df_table)
 
         # Chart BEFORE the table
-        self._add_scales_timeline_chart(doc, lateral_df)
+        if with_chart:
+            self._add_scales_timeline_chart(doc, lateral_df)
+
+        if not with_table:
+            return
 
         columns_to_exclude = [
             "date",
@@ -1584,8 +1594,8 @@ class SessionExporter:
         all_keys = [
             "initial_notes",
             "session_data",
-            "session_data_overview_graph",
-            "session_data_complete_table",
+            "session_data_graph",
+            "session_data_table",
             "electrode_config",
             "programming_summary",
         ]
@@ -1595,33 +1605,37 @@ class SessionExporter:
             # Default: all sections, but use children instead of parent for session_data
             active = set(all_keys) - {"session_data"}
 
-        if "initial_notes" in active:
-            doc.add_paragraph("")
-            self._add_summary_section(doc, df, df_initial, df_table)
-
-        # Handle session_data sections
-        if "session_data" in active:
-            # For backward compatibility, treat parent as table only
-            doc.add_paragraph("")
-            self._add_session_data_table(doc, df_table)
-
-        if "session_data_overview_graph" in active:
-            # Graph functionality not yet implemented for session reports
-            # doc.add_paragraph("")
-            # self._add_session_data_graph(doc, df_table)
-            pass
-
-        if "session_data_complete_table" in active:
-            doc.add_paragraph("")
-            self._add_session_data_table(doc, df_table)
-
-        if "electrode_config" in active:
-            doc.add_paragraph("")
-            self._add_electrode_config_section(doc, df, df_initial)
-
-        if "programming_summary" in active:
-            doc.add_paragraph("")
-            self._add_programming_summary(doc, df, df_initial, df_table)
+        # Render in the defined order
+        for key in all_keys:
+            if key not in active:
+                continue
+            if key == "initial_notes":
+                doc.add_paragraph("")
+                self._add_summary_section(doc, df, df_initial, df_table)
+            if key == "session_data":
+                # Treat parent as both graph and table
+                doc.add_paragraph("")
+                self._add_session_data_table(
+                    doc, df_table, with_chart=True, with_table=True
+                )
+            elif key == "session_data_graph":
+                # Handle graph separately - always add heading
+                doc.add_paragraph("")
+                self._add_session_data_table(
+                    doc, df_table, with_chart=True, with_table=False
+                )
+            elif key == "session_data_table":
+                # Handle table separately - always add heading
+                doc.add_paragraph("")
+                self._add_session_data_table(
+                    doc, df_table, with_chart=False, with_table=True
+                )
+            if key == "electrode_config":
+                doc.add_paragraph("")
+                self._add_electrode_config_section(doc, df, df_initial)
+            if key == "programming_summary":
+                doc.add_paragraph("")
+                self._add_programming_summary(doc, df, df_initial, df_table)
 
         doc.save(file_path)
         return True

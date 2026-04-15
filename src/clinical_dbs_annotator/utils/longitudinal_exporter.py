@@ -244,33 +244,33 @@ class LongitudinalExporter:
 
         doc.add_paragraph("")
 
-        # Determine which sections to include (default: sessions_overview + session_data)
+        # Determine which sections to include (default: sessions_overview + session_data children)
         all_keys = [
             "sessions_overview",
             "session_data",
-            "session_data_overview_graph",
-            "session_data_complete_table",
+            "session_data_graph",
+            "session_data_table",
             "electrode_config",
             "programming_summary",
         ]
-        active = (
-            set(sections)
-            if sections is not None
-            else {"sessions_overview", "session_data"}
-        )
+        if sections is not None:
+            active = set(sections)
+        else:
+            # Default: sessions_overview + both session_data children
+            active = {"sessions_overview", "session_data_graph"}
 
         # Render in the defined order
         for key in all_keys:
             if key not in active:
                 continue
             if key == "sessions_overview":
-                self._add_sessions_overview(doc, df_all, file_paths)
                 doc.add_paragraph("")
-            elif key == "session_data":
-                # For backward compatibility, treat parent as both children
+                self._add_sessions_overview(doc, df_all, file_paths)
+            if key == "session_data":
+                # Treat parent as both children
+                doc.add_paragraph("")
                 doc.add_heading("Session Data", level=1)
                 self._add_scales_timeline_chart(doc, df_session, file_paths)
-                doc.add_paragraph("")
                 self._add_longitudinal_data_table(
                     doc,
                     df_session,
@@ -278,17 +278,15 @@ class LongitudinalExporter:
                     include_chart=False,
                     include_heading=False,
                 )
-                doc.add_paragraph("")
-            elif key == "session_data_overview_graph":
+            elif key == "session_data_graph":
                 # Handle graph separately - add heading first
-                if "session_data_complete_table" not in active:
-                    doc.add_heading("Session Data", level=1)
-                self._add_scales_timeline_chart(doc, df_session, file_paths)
                 doc.add_paragraph("")
-            elif key == "session_data_complete_table":
+                doc.add_heading("Session Data", level=1)
+                self._add_scales_timeline_chart(doc, df_session, file_paths)
+            elif key == "session_data_table":
                 # Handle table separately - add heading first if graph not selected
-                if "session_data_overview_graph" not in active:
-                    doc.add_heading("Session Data", level=1)
+                doc.add_paragraph("")
+                doc.add_heading("Session Data", level=1)
                 self._add_longitudinal_data_table(
                     doc,
                     df_session,
@@ -297,12 +295,12 @@ class LongitudinalExporter:
                     include_heading=False,
                 )
                 doc.add_paragraph("")
-            elif key == "electrode_config":
+            if key == "electrode_config":
+                doc.add_paragraph("")
                 self._add_electrode_config_section(doc, df_all, file_paths)
+            if key == "programming_summary":
                 doc.add_paragraph("")
-            elif key == "programming_summary":
                 self._add_programming_summary(doc, df_all, file_paths)
-                doc.add_paragraph("")
 
         doc.save(out_path)
         return True
@@ -949,7 +947,7 @@ class LongitudinalExporter:
             scale_data,
             self.scale_optimization_prefs,
             title="Session Scale Trends",
-            x_label="Session",
+            x_label="Session Block",
             y_label="Scale Value",
             x_ticks=x_ticks,
             rotate_x_ticks=True,
@@ -1074,7 +1072,7 @@ class LongitudinalExporter:
     ) -> tuple[dict[str, dict[int, float]], list[tuple[int, str]]]:
         """Collect all session scale values across files, one point per block per file.
 
-        X-tick labels: ``{date}_{block_ID}_{run_ID}``
+        X-tick labels: ``{date}_{run_ID}``
 
         Returns:
             (scale_data, x_ticks)
@@ -1110,13 +1108,19 @@ class LongitudinalExporter:
             run_id = self._extract_run_from_filename(src)
 
             blocks = sorted(df_src["block_id"].unique())
-            for bid in blocks:
+            for i, bid in enumerate(blocks):
                 point_keys.append((src, bid))
                 bid_str = str(int(bid)) if bid == int(bid) else str(bid)
-                parts = [date_str, bid_str]
-                if run_id:
-                    parts.append(run_id)
-                tick_labels.append("_".join(parts))
+                if i == 0:
+                    # First block: full label {date}_{run_id}_{block_id}
+                    parts = [date_str]
+                    if run_id:
+                        parts.append(run_id)
+                    parts.append(bid_str)
+                    tick_labels.append("_".join(parts))
+                else:
+                    # Subsequent blocks: only block_id
+                    tick_labels.append(bid_str)
 
         if not point_keys:
             return {}, []
@@ -1176,6 +1180,12 @@ class LongitudinalExporter:
             return df
 
         df = self._normalize_block_id(df)
+
+        # Sort by source file (chronological order) and block_id (ascending)
+        if "_source_file" in df.columns:
+            df = df.sort_values(by=["_source_file", "block_id"], ascending=[True, True])
+        elif "block_id" in df.columns:
+            df = df.sort_values(by=["block_id"], ascending=True)
 
         # Create a global entry id combining source file + block_id
         if "_source_file" in df.columns and "block_id" in df.columns:

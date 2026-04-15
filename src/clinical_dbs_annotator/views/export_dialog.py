@@ -395,12 +395,11 @@ class ReportSectionsDialog(QDialog):
 
     def _on_child_toggled(self, parent_cb: QCheckBox, checked: bool) -> None:
         """Handle child checkbox toggled - update parent if all children have same state."""
-        # Find parent key
+        # Find parent key from parent checkbox
         parent_key = None
         for key, cb in self._checkboxes:
             if cb == parent_cb:
-                # This is a child, find its parent
-                parent_key = self._child_parent_map.get(key)
+                parent_key = key
                 break
 
         if not parent_key:
@@ -422,11 +421,16 @@ class ReportSectionsDialog(QDialog):
                     break
 
         # Update parent checkbox
+        parent_cb.blockSignals(True)
         if all_checked:
             parent_cb.setChecked(True)
         elif all_unchecked:
             parent_cb.setChecked(False)
-        # If mixed, keep current state (partial check)
+        # If mixed, set to partially checked
+        else:
+            parent_cb.setTristate(True)
+            parent_cb.setCheckState(Qt.PartiallyChecked)
+        parent_cb.blockSignals(False)
 
     def get_selected_sections(self) -> list[str]:
         """Return ordered list of keys for checked sections."""
