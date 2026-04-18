@@ -128,8 +128,10 @@ def setup_logging(_app: QApplication) -> Path:
         else:
             level = logging.CRITICAL
         suffix = ""
-        if context.file:
-            suffix = f" ({context.file}:{context.line})"
+        ctx_file = getattr(context, "file", None)
+        ctx_line = getattr(context, "line", None)
+        if ctx_file:
+            suffix = f" ({ctx_file}:{ctx_line})"
         logging.getLogger("qt").log(level, "%s%s", message, suffix)
 
     qInstallMessageHandler(qt_handler)

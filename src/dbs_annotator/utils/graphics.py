@@ -71,10 +71,10 @@ def rounded_pixmap(pixmap: QPixmap, radius: int) -> QPixmap:
     """
     size = pixmap.size()
     rounded = QPixmap(size)
-    rounded.fill(Qt.transparent)
+    rounded.fill(Qt.GlobalColor.transparent)
 
     painter = QPainter(rounded)
-    painter.setRenderHint(QPainter.Antialiasing)
+    painter.setRenderHint(QPainter.RenderHint.Antialiasing)
 
     path = QPainterPath()
     path.addRoundedRect(QRectF(0, 0, size.width(), size.height()), radius, radius)

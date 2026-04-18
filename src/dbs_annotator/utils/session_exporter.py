@@ -10,6 +10,7 @@ import shutil
 import subprocess
 import tempfile
 from datetime import datetime
+from typing import Protocol, cast
 
 import pandas as pd
 from docx import Document
@@ -26,6 +27,12 @@ from .. import __app_name__, __version__
 from ..config import PLACEHOLDERS
 from ..config_electrode_models import ELECTRODE_MODELS, MANUFACTURERS, ContactState
 from ..models import ElectrodeCanvas
+
+
+class _ExportTransientParent(Protocol):
+    """QWidget host that may store a reference to a transient export message."""
+
+    _export_transient_msg: QMessageBox | None
 
 
 class SessionExporter:
@@ -109,19 +116,19 @@ class SessionExporter:
         text: str,
         *,
         msecs: int = 2000,
-        icon: QMessageBox.Icon = QMessageBox.Information,
+        icon: QMessageBox.Icon = QMessageBox.Icon.Information,
     ) -> None:
         msg = QMessageBox(parent)
         msg.setIcon(icon)
         msg.setWindowTitle(title)
         msg.setText(text)
-        msg.setStandardButtons(QMessageBox.NoButton)
-        msg.setWindowModality(Qt.NonModal)
+        msg.setStandardButtons(QMessageBox.StandardButton.NoButton)
+        msg.setWindowModality(Qt.WindowModality.NonModal)
         msg.show()
 
         if parent is not None:
             try:
-                parent._export_transient_msg = msg
+                cast(_ExportTransientParent, parent)._export_transient_msg = msg
             except Exception:
                 pass
 
@@ -141,8 +148,9 @@ class SessionExporter:
 
             if parent is not None:
                 try:
-                    if getattr(parent, "_export_transient_msg", None) is msg:
-                        parent._export_transient_msg = None
+                    host = cast(_ExportTransientParent, parent)
+                    if host._export_transient_msg is msg:
+                        host._export_transient_msg = None
                 except Exception:
                     pass
 
@@ -1166,7 +1174,7 @@ class SessionExporter:
 
         def white_bg_paint(event):
             painter = QPainter(canvas)
-            painter.fillRect(canvas.rect(), Qt.white)
+            painter.fillRect(canvas.rect(), Qt.GlobalColor.white)
             original_paint(event)
 
         canvas.paintEvent = white_bg_paint  # type: ignore[assignment]  # ty: ignore[invalid-assignment]
@@ -1196,13 +1204,13 @@ class SessionExporter:
 
         def white_bg_paint(event):
             painter = QPainter(canvas)
-            painter.fillRect(canvas.rect(), Qt.white)
+            painter.fillRect(canvas.rect(), Qt.GlobalColor.white)
             original_paint(event)
 
         canvas.paintEvent = white_bg_paint  # type: ignore[assignment]  # ty: ignore[invalid-assignment]
 
         pixmap = QPixmap(canvas.size())
-        pixmap.fill(Qt.white)
+        pixmap.fill(Qt.GlobalColor.white)
         canvas.render(pixmap)
 
         # Crop white borders
@@ -1211,7 +1219,7 @@ class SessionExporter:
 
         # Find bounding box of non-white content
         left, top, right, bottom = image.width(), image.height(), 0, 0
-        white_rgb = _QColor(Qt.white).rgb()
+        white_rgb = _QColor(Qt.GlobalColor.white).rgb()
         for y in range(image.height()):
             for x in range(image.width()):
                 if image.pixel(x, y) != white_rgb:
@@ -1301,6 +1309,8 @@ class SessionExporter:
 
         # Add electrode model info
         latest_init = self._pick_latest_session_row(df_initial)
+        if latest_init is None:
+            return
         model = str(latest_init.get("electrode_model", "") or "")
         manufacturer = self._get_manufacturer_for_model(model)
         if model:

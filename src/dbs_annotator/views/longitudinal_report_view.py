@@ -37,13 +37,13 @@ class FileDropZone(QWidget):
         self._on_files_dropped = on_files_dropped
         self.setAcceptDrops(True)
         self.setMinimumHeight(80)
-        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         self._label = QLabel(
             "Drop .tsv annotation files here\nor use the Add Files button"
         )
-        self._label.setAlignment(Qt.AlignCenter)
+        self._label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self._label.setStyleSheet("color: #64748b; padding: 10px;")
-        self._label.setAttribute(Qt.WA_TransparentForMouseEvents, True)
+        self._label.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents, True)
         layout = QVBoxLayout(self)
         layout.addWidget(self._label)
         self._update_style(False)
@@ -165,7 +165,7 @@ class LongitudinalReportView(QWidget):
         # Export button with dropdown menu
         self.export_button = QPushButton("Create Report")
         self.export_button.setIcon(
-            self.parent_style.standardIcon(QStyle.SP_DialogSaveButton)
+            self.parent_style.standardIcon(QStyle.StandardPixmap.SP_DialogSaveButton)
         )
         self.export_button.setMinimumWidth(170)
 
@@ -183,7 +183,7 @@ class LongitudinalReportView(QWidget):
     def _create_file_group(self) -> QGroupBox:
         """Create the file upload group with drop zone and file list."""
         gb = QGroupBox("Annotation Files")
-        gb.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        gb.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
 
         layout = QVBoxLayout(gb)
         layout.setSpacing(10)
@@ -202,7 +202,7 @@ class LongitudinalReportView(QWidget):
 
         self.add_files_button = QPushButton("Add Files")
         self.add_files_button.setIcon(
-            self.parent_style.standardIcon(QStyle.SP_FileDialogNewFolder)
+            self.parent_style.standardIcon(QStyle.StandardPixmap.SP_FileDialogNewFolder)
         )
         self.add_files_button.setMaximumWidth(140)
         self.add_files_button.clicked.connect(self._browse_files)
@@ -210,7 +210,7 @@ class LongitudinalReportView(QWidget):
 
         self.remove_selected_button = QPushButton("Remove Selected")
         self.remove_selected_button.setIcon(
-            self.parent_style.standardIcon(QStyle.SP_TrashIcon)
+            self.parent_style.standardIcon(QStyle.StandardPixmap.SP_TrashIcon)
         )
         self.remove_selected_button.setMaximumWidth(160)
         self.remove_selected_button.clicked.connect(self._remove_selected)
@@ -237,9 +237,13 @@ class LongitudinalReportView(QWidget):
 
         # File list
         self.file_list = QListWidget()
-        self.file_list.setSelectionMode(QAbstractItemView.ExtendedSelection)
+        self.file_list.setSelectionMode(
+            QAbstractItemView.SelectionMode.ExtendedSelection
+        )
         self.file_list.setMinimumHeight(120)
-        self.file_list.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.file_list.setSizePolicy(
+            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding
+        )
         self.file_list.setAlternatingRowColors(True)
         file_container_layout.addWidget(self.file_list)
 
@@ -288,7 +292,7 @@ class LongitudinalReportView(QWidget):
         if not selected:
             return
         for item in selected:
-            path = item.data(Qt.UserRole)
+            path = item.data(Qt.ItemDataRole.UserRole)
             if path in self.loaded_files:
                 self.loaded_files.remove(path)
         self._refresh_file_list()
@@ -304,7 +308,7 @@ class LongitudinalReportView(QWidget):
         for path in self.loaded_files:
             basename = os.path.basename(path)
             item = QListWidgetItem(basename)
-            item.setData(Qt.UserRole, path)
+            item.setData(Qt.ItemDataRole.UserRole, path)
             item.setToolTip(path)
             self.file_list.addItem(item)
         count = len(self.loaded_files)

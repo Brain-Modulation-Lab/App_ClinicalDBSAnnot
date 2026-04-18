@@ -52,9 +52,9 @@ class ElectrodeCanvas(QWidget):
         self.setContentsMargins(2, 2, 2, 2)
         self.setAutoFillBackground(False)
         self.setMouseTracking(True)
-        self.setCursor(Qt.PointingHandCursor)
+        self.setCursor(Qt.CursorShape.PointingHandCursor)
         self.export_mode = False
-        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
 
     def set_export_mode(self, enabled: bool) -> None:
         """Toggle export mode (tighter padding, larger scale for PNG output)."""
@@ -198,7 +198,7 @@ class ElectrodeCanvas(QWidget):
     @typing.override
     def mousePressEvent(self, event):
         """Handle clicks on contacts, rings and case"""
-        if event.button() == Qt.LeftButton:
+        if event.button() == Qt.MouseButton.LeftButton:
             # Check if a contact was clicked
             contact_id = self.get_contact_at_pos(event.pos())
             if contact_id:
@@ -277,8 +277,8 @@ class ElectrodeCanvas(QWidget):
             return
 
         painter = QPainter(self)
-        painter.setRenderHint(QPainter.Antialiasing)
-        painter.setRenderHint(QPainter.SmoothPixmapTransform)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+        painter.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform)
 
         # Background
         palette = self.palette()
@@ -330,17 +330,21 @@ class ElectrodeCanvas(QWidget):
             case_x + 2, case_y + 1, case_width * 0.4, case_height * 0.3
         )
         painter.setBrush(QColor(255, 255, 255, 40))
-        painter.setPen(Qt.NoPen)
+        painter.setPen(Qt.PenStyle.NoPen)
         painter.drawRoundedRect(highlight_rect, 3, 3)
 
         # Case label - smaller font in export mode
-        painter.setPen(Qt.white if self.case_state != ContactState.OFF else Qt.black)
+        painter.setPen(
+            Qt.GlobalColor.white
+            if self.case_state != ContactState.OFF
+            else Qt.GlobalColor.black
+        )
         case_font_size = (
             max(7, int(scale * 0.35)) if self.export_mode else max(8, int(scale * 0.4))
         )
-        font = QFont("Arial", case_font_size, QFont.Bold)
+        font = QFont("Arial", case_font_size, QFont.Weight.Bold)
         painter.setFont(font)
-        painter.drawText(self.case_rect, Qt.AlignCenter, "CASE")
+        painter.drawText(self.case_rect, Qt.AlignmentFlag.AlignCenter, "CASE")
 
         # Draw electrode body (lead)
         lead_width = self.model.lead_diameter * scale * 1.8
@@ -367,14 +371,14 @@ class ElectrodeCanvas(QWidget):
             center_x - lead_width / 2, start_y, center_x + lead_width / 2, start_y
         )
 
-        base_color = palette.color(QPalette.Midlight)
+        base_color = palette.color(QPalette.ColorRole.Midlight)
         lead_gradient.setColorAt(0, base_color.darker(120))
         lead_gradient.setColorAt(0.3, base_color)
         lead_gradient.setColorAt(0.7, base_color)
         lead_gradient.setColorAt(1, base_color.darker(120))
 
         painter.setBrush(QBrush(lead_gradient))
-        painter.setPen(QPen(palette.color(QPalette.Dark), 2))
+        painter.setPen(QPen(palette.color(QPalette.ColorRole.Dark), 2))
 
         if getattr(self.model, "tip_contact", False):
             # Boston Scientific: flat bottom so lead seamlessly meets the tip contact
@@ -417,7 +421,7 @@ class ElectrodeCanvas(QWidget):
         shadow_left.setColorAt(0, QColor(0, 0, 0, 30))
         shadow_left.setColorAt(1, QColor(0, 0, 0, 0))
         painter.setBrush(QBrush(shadow_left))
-        painter.setPen(Qt.NoPen)
+        painter.setPen(Qt.PenStyle.NoPen)
         painter.drawRect(
             int(center_x - lead_width / 2),
             int(start_y),
@@ -485,7 +489,7 @@ class ElectrodeCanvas(QWidget):
                     shadow_poly = QPolygonF(poly)
                     shadow_poly.translate(1, 2)
                     painter.setBrush(QColor(0, 0, 0, 30))
-                    painter.setPen(Qt.NoPen)
+                    painter.setPen(Qt.PenStyle.NoPen)
                     painter.drawPolygon(shadow_poly)
 
                     # Draw main segment
@@ -514,7 +518,7 @@ class ElectrodeCanvas(QWidget):
                             ]
                         )
                         painter.setBrush(QColor(255, 255, 255, 40))
-                        painter.setPen(Qt.NoPen)
+                        painter.setPen(Qt.PenStyle.NoPen)
                         painter.drawPolygon(highlight_poly)
 
                     self.contact_rects[contact_id] = bounds
@@ -528,15 +532,19 @@ class ElectrodeCanvas(QWidget):
                     ).united(path)
 
                     # Label - smaller font in export mode
-                    painter.setPen(Qt.white if state != ContactState.OFF else Qt.black)
+                    painter.setPen(
+                        Qt.GlobalColor.white
+                        if state != ContactState.OFF
+                        else Qt.GlobalColor.black
+                    )
                     font_size = (
                         max(6, int(scale * 0.3))
                         if self.export_mode
                         else max(7, int(scale * 0.4))
                     )
-                    font = QFont("Arial", font_size, QFont.Bold)
+                    font = QFont("Arial", font_size, QFont.Weight.Bold)
                     painter.setFont(font)
-                    painter.drawText(bounds, Qt.AlignCenter, label)
+                    painter.drawText(bounds, Qt.AlignmentFlag.AlignCenter, label)
 
                 # Segment 'a' (left) - extends left
                 contact_id_a = (contact_idx, 0)
@@ -673,7 +681,7 @@ class ElectrodeCanvas(QWidget):
                     shadow_path = QPainterPath(tip_path)
                     shadow_path.translate(0, 2)
                     painter.setBrush(QColor(0, 0, 0, 20))
-                    painter.setPen(Qt.NoPen)
+                    painter.setPen(Qt.PenStyle.NoPen)
                     painter.drawPath(shadow_path)
 
                     painter.setBrush(QBrush(contact_gradient_tip))
@@ -688,7 +696,7 @@ class ElectrodeCanvas(QWidget):
                             contact_height_px * 0.4,
                         )
                         painter.setBrush(QColor(255, 255, 255, 50))
-                        painter.setPen(Qt.NoPen)
+                        painter.setPen(Qt.PenStyle.NoPen)
                         painter.drawRoundedRect(highlight_rect, 2, 2)
 
                     self.contact_rects[contact_id] = tip_bounds
@@ -702,7 +710,7 @@ class ElectrodeCanvas(QWidget):
                     shadow_rect = QRectF(rect)
                     shadow_rect.translate(0, 2)
                     painter.setBrush(QColor(0, 0, 0, 20))
-                    painter.setPen(Qt.NoPen)
+                    painter.setPen(Qt.PenStyle.NoPen)
                     painter.drawRoundedRect(shadow_rect, 3, 3)
 
                     painter.setBrush(QBrush(contact_gradient))
@@ -717,7 +725,7 @@ class ElectrodeCanvas(QWidget):
                             rect.height() * 0.4,
                         )
                         painter.setBrush(QColor(255, 255, 255, 50))
-                        painter.setPen(Qt.NoPen)
+                        painter.setPen(Qt.PenStyle.NoPen)
                         painter.drawRoundedRect(highlight_rect, 2, 2)
 
                     self.contact_rects[contact_id] = rect
@@ -730,13 +738,13 @@ class ElectrodeCanvas(QWidget):
                     ).united(path)
 
             # Contact number on the left - smaller font in export mode
-            painter.setPen(palette.color(QPalette.Text))
+            painter.setPen(palette.color(QPalette.ColorRole.Text))
             elabel_size = (
                 max(7, int(scale * 0.35))
                 if self.export_mode
                 else max(10, int(scale * 0.5))
             )
-            font = QFont("Arial", elabel_size, QFont.Bold)
+            font = QFont("Arial", elabel_size, QFont.Weight.Bold)
             painter.setFont(font)
 
             label_extension = base_extension if is_directional_contact else 0
@@ -761,7 +769,7 @@ class ElectrodeCanvas(QWidget):
                 int(current_y),
                 35,
                 int(contact_height_px),
-                Qt.AlignVCenter | Qt.AlignRight,
+                Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignRight,
                 contact_label,
             )
 
@@ -802,7 +810,7 @@ class ElectrodeCanvas(QWidget):
             shadow_rect = QRectF(ring_cap_rect)
             shadow_rect.translate(0, 1)
             painter.setBrush(QColor(0, 0, 0, 25))
-            painter.setPen(Qt.NoPen)
+            painter.setPen(Qt.PenStyle.NoPen)
             painter.drawRoundedRect(shadow_rect, 3, 3)
 
             # Draw ring cap
@@ -819,11 +827,15 @@ class ElectrodeCanvas(QWidget):
                     ring_cap_rect.height() * 0.4,
                 )
                 painter.setBrush(QColor(255, 255, 255, 50))
-                painter.setPen(Qt.NoPen)
+                painter.setPen(Qt.PenStyle.NoPen)
                 painter.drawRoundedRect(highlight, 2, 2)
 
             # Ring label - smaller font in export mode
-            painter.setPen(Qt.white if ring_state != ContactState.OFF else Qt.black)
+            painter.setPen(
+                Qt.GlobalColor.white
+                if ring_state != ContactState.OFF
+                else Qt.GlobalColor.black
+            )
             ring_font_size = (
                 max(6, int(scale * 0.3))
                 if self.export_mode
@@ -831,7 +843,7 @@ class ElectrodeCanvas(QWidget):
             )
             font = QFont("Arial", ring_font_size)
             painter.setFont(font)
-            painter.drawText(ring_cap_rect, Qt.AlignCenter, "Ring")
+            painter.drawText(ring_cap_rect, Qt.AlignmentFlag.AlignCenter, "Ring")
 
     @typing.override
     def resizeEvent(self, event):

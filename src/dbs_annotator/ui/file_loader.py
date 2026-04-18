@@ -8,6 +8,7 @@ with the dropped file path.
 import typing
 from collections.abc import Callable
 
+from PySide6.QtGui import QDragEnterEvent, QDropEvent
 from PySide6.QtWidgets import QLineEdit
 
 
@@ -26,22 +27,22 @@ class FileDropLineEdit(QLineEdit):
         self.setAcceptDrops(True)
 
     @typing.override
-    def dragEnterEvent(self, event):
+    def dragEnterEvent(self, arg__1: QDragEnterEvent) -> None:
         """Accept drag events that carry file URLs."""
-        if event.mimeData().hasUrls():
-            event.acceptProposedAction()
+        if arg__1.mimeData().hasUrls():
+            arg__1.acceptProposedAction()
             return
-        super().dragEnterEvent(event)
+        super().dragEnterEvent(arg__1)
 
     @typing.override
-    def dropEvent(self, event):
+    def dropEvent(self, arg__1: QDropEvent) -> None:
         """Handle file drop: extract first URL and invoke callback."""
-        if event.mimeData().hasUrls():
-            urls = event.mimeData().urls()
+        if arg__1.mimeData().hasUrls():
+            urls = arg__1.mimeData().urls()
             if urls:
                 local_path = urls[0].toLocalFile()
                 if local_path:
                     self._on_file_dropped(local_path)
-            event.acceptProposedAction()
+            arg__1.acceptProposedAction()
             return
-        super().dropEvent(event)
+        super().dropEvent(arg__1)

@@ -39,6 +39,7 @@ dev = [
     "pre-commit>=3.6",
     "ty>=0.0.30",
     "pandas-stubs>=3.0.0.260204",
+    "pyside6-stubs>=6.7.3.0",
 ]
 build = [
     "pyinstaller>=6.15.0",
@@ -124,5 +125,3 @@ strict_optional = true
 module = "PySide6.*"
 ignore_missing_imports = true
 
-[tool.ty.rules]
-unresolved-attribute = "ignore"

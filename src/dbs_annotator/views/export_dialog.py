@@ -19,6 +19,7 @@ from PySide6.QtWidgets import (
     QCheckBox,
     QDialog,
     QDialogButtonBox,
+    QFrame,
     QHBoxLayout,
     QLabel,
     QLineEdit,
@@ -83,7 +84,9 @@ class ScaleTargetValuesDialog(QDialog):
 
         # Scrollable content for both sections
         scroll_content = QWidget()
-        scroll_content.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
+        scroll_content.setSizePolicy(
+            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum
+        )
         scroll_content.setAutoFillBackground(False)
         self._rows_layout = QVBoxLayout(scroll_content)
         self._rows_layout.setContentsMargins(0, 0, 0, 0)
@@ -122,8 +125,8 @@ class ScaleTargetValuesDialog(QDialog):
 
         scroll = QScrollArea()
         scroll.setWidgetResizable(True)
-        scroll.setFrameShape(QScrollArea.NoFrame)
-        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        scroll.setFrameShape(QFrame.Shape.NoFrame)
+        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         scroll.setWidget(scroll_content)
         scroll.setStyleSheet("""
             QScrollArea {
@@ -137,7 +140,9 @@ class ScaleTargetValuesDialog(QDialog):
         layout.addWidget(scroll, 1)
 
         # Dialog buttons
-        btn_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        btn_box = QDialogButtonBox(
+            QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
+        )
         btn_box.accepted.connect(self.accept)
         btn_box.rejected.connect(self.reject)
         layout.addWidget(btn_box)
@@ -382,7 +387,9 @@ class ReportSectionsDialog(QDialog):
                                 c.setChecked(True)
                                 break
 
-        buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        buttons = QDialogButtonBox(
+            QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
+        )
         buttons.accepted.connect(self.accept)
         buttons.rejected.connect(self.reject)
         layout.addWidget(buttons)
@@ -431,7 +438,7 @@ class ReportSectionsDialog(QDialog):
         # If mixed, set to partially checked
         else:
             parent_cb.setTristate(True)
-            parent_cb.setCheckState(Qt.PartiallyChecked)
+            parent_cb.setCheckState(Qt.CheckState.PartiallyChecked)
         parent_cb.blockSignals(False)
 
     def get_selected_sections(self) -> list[str]:

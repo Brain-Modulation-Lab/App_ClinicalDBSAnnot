@@ -173,7 +173,7 @@ class Step1View(BaseStepView):
         right_widget.setMinimumWidth(400)
 
         # Splitter: right panel shrinks first (stretch=1), left stays stable (stretch=0)
-        splitter = QSplitter(Qt.Horizontal)
+        splitter = QSplitter(Qt.Orientation.Horizontal)
         splitter.addWidget(left_widget)
         splitter.addWidget(right_widget)
         splitter.setStretchFactor(0, 0)  # left: does not absorb resize changes
@@ -183,14 +183,18 @@ class Step1View(BaseStepView):
         self.main_layout.addWidget(splitter)
 
         self.next_button = QPushButton("Next")
-        self.next_button.setIcon(self.parent_style.standardIcon(QStyle.SP_ArrowForward))
+        self.next_button.setIcon(
+            self.parent_style.standardIcon(QStyle.StandardPixmap.SP_ArrowForward)
+        )
         self.next_button.setIconSize(QSize(16, 16))
         self.next_button.setMaximumWidth(120)
 
     def _create_settings_group(self) -> QGroupBox:
         """Create the initial settings group box."""
         gb_init = QGroupBox("Initial settings")
-        gb_init.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        gb_init.setSizePolicy(
+            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding
+        )
 
         container_layout = QHBoxLayout()
 
@@ -223,10 +227,12 @@ class Step1View(BaseStepView):
         group_row = QGroupBox("Program")
         group_row_layout = QHBoxLayout()
         self.group_combo = QComboBox()
-        self.group_combo.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        self.group_combo.setSizePolicy(
+            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed
+        )
         # Prevent focus rectangle on dropdown
         self.group_combo.view().window().setAttribute(
-            Qt.WA_TranslucentBackground, False
+            Qt.WidgetAttribute.WA_TranslucentBackground, False
         )
         self.group_combo.view().setStyleSheet("QAbstractItemView { outline: none; }")
         # Load program names from config
@@ -251,7 +257,9 @@ class Step1View(BaseStepView):
         pw_limits = STIMULATION_LIMITS["pulse_width"]
 
         self.left_group = QGroupBox("Left")
-        self.left_group.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.left_group.setSizePolicy(
+            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding
+        )
         left_group_layout = QVBoxLayout()
 
         freq_row = QHBoxLayout()
@@ -324,21 +332,29 @@ class Step1View(BaseStepView):
 
         self.left_config_box = QFrame()
         self.left_config_box.setStyleSheet("background: transparent; border: none;")
-        self.left_config_box.setAttribute(Qt.WA_TranslucentBackground, True)
-        self.left_config_box.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.left_config_box.setAttribute(
+            Qt.WidgetAttribute.WA_TranslucentBackground, True
+        )
+        self.left_config_box.setSizePolicy(
+            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding
+        )
         left_config_layout = QVBoxLayout(self.left_config_box)
         left_config_layout.setContentsMargins(6, 4, 6, 4)
         self.left_config_label = QLabel()
         self.left_config_label.setWordWrap(True)
-        self.left_config_label.setTextInteractionFlags(Qt.TextSelectableByMouse)
-        self.left_config_label.setTextFormat(Qt.RichText)
+        self.left_config_label.setTextInteractionFlags(
+            Qt.TextInteractionFlag.TextSelectableByMouse
+        )
+        self.left_config_label.setTextFormat(Qt.TextFormat.RichText)
         left_config_layout.addWidget(self.left_config_label)
         left_group_layout.addWidget(self.left_config_box)
         left_group_layout.addStretch(1)
         self.left_group.setLayout(left_group_layout)
 
         self.right_group = QGroupBox("Right")
-        self.right_group.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.right_group.setSizePolicy(
+            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding
+        )
         right_group_layout = QVBoxLayout()
 
         freq_row = QHBoxLayout()
@@ -411,16 +427,20 @@ class Step1View(BaseStepView):
 
         self.right_config_box = QFrame()
         self.right_config_box.setStyleSheet("background: transparent; border: none;")
-        self.right_config_box.setAttribute(Qt.WA_TranslucentBackground, True)
+        self.right_config_box.setAttribute(
+            Qt.WidgetAttribute.WA_TranslucentBackground, True
+        )
         self.right_config_box.setSizePolicy(
-            QSizePolicy.Expanding, QSizePolicy.Expanding
+            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding
         )
         right_config_layout = QVBoxLayout(self.right_config_box)
         right_config_layout.setContentsMargins(6, 4, 6, 4)
         self.right_config_label = QLabel()
         self.right_config_label.setWordWrap(True)
-        self.right_config_label.setTextInteractionFlags(Qt.TextSelectableByMouse)
-        self.right_config_label.setTextFormat(Qt.RichText)
+        self.right_config_label.setTextInteractionFlags(
+            Qt.TextInteractionFlag.TextSelectableByMouse
+        )
+        self.right_config_label.setTextFormat(Qt.TextFormat.RichText)
         right_config_layout.addWidget(self.right_config_label)
         right_group_layout.addWidget(self.right_config_box)
         right_group_layout.addStretch(1)
@@ -447,9 +467,11 @@ class Step1View(BaseStepView):
         """)
 
         sidebar_scroll.setWidgetResizable(True)
-        sidebar_scroll.setFrameShape(QFrame.NoFrame)
-        sidebar_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        sidebar_scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        sidebar_scroll.setFrameShape(QFrame.Shape.NoFrame)
+        sidebar_scroll.setHorizontalScrollBarPolicy(
+            Qt.ScrollBarPolicy.ScrollBarAlwaysOff
+        )
+        sidebar_scroll.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
         sidebar_scroll.setMinimumWidth(380)
         sidebar_scroll.setWidget(sidebar_widget)
 
@@ -820,13 +842,15 @@ class Step1View(BaseStepView):
         """Create the file upload group with drop zone, Open, and New buttons."""
         gb_upload = QGroupBox("Upload TSV file")
         gb_upload.setFixedHeight(100)
-        gb_upload.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        gb_upload.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
 
         layout = QHBoxLayout(gb_upload)
 
         self.file_path_edit = FileDropLineEdit(self._on_file_dropped)
         self.file_path_edit.setFixedHeight(45)
-        self.file_path_edit.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        self.file_path_edit.setSizePolicy(
+            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed
+        )
         self.file_path_edit.setReadOnly(True)
         self.file_path_edit.setClearButtonEnabled(False)
         self.file_path_edit.textChanged.connect(self._on_file_path_changed)
@@ -857,7 +881,9 @@ class Step1View(BaseStepView):
     def _create_clinical_scales_group(self) -> QGroupBox:
         """Create the clinical scales group box."""
         gb_clinical = QGroupBox("Clinical scales")
-        gb_clinical.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        gb_clinical.setSizePolicy(
+            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding
+        )
 
         layout = QVBoxLayout(gb_clinical)
 
@@ -885,7 +911,9 @@ class Step1View(BaseStepView):
         # Container for dynamic scale rows - expands to show all rows
         scroll_content = QWidget()
         # scroll_content.setStyleSheet("background: transparent; border: none;")
-        scroll_content.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        scroll_content.setSizePolicy(
+            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding
+        )
         self.clinical_scales_container = QVBoxLayout(scroll_content)
         self.clinical_scales_container.setContentsMargins(0, 0, 0, 0)
 
@@ -900,12 +928,14 @@ class Step1View(BaseStepView):
                 background: transparent;
             }
         """)
-        # scroll_area.setAttribute(Qt.WA_TranslucentBackground, True)
+        # scroll_area.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)
         scroll_area.setWidgetResizable(True)
-        scroll_area.setFrameShape(QScrollArea.NoFrame)
-        scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
-        scroll_area.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        scroll_area.setFrameShape(QFrame.Shape.NoFrame)
+        scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+        scroll_area.setSizePolicy(
+            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding
+        )
         scroll_area.setWidget(scroll_content)
 
         layout.addWidget(scroll_area)
@@ -943,7 +973,9 @@ class Step1View(BaseStepView):
     def _create_notes_group(self) -> QGroupBox:
         """Create the initial notes group box."""
         gb_notes = QGroupBox("Initial notes")
-        gb_notes.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        gb_notes.setSizePolicy(
+            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding
+        )
 
         layout = QVBoxLayout(gb_notes)
         layout.setSpacing(10)
@@ -959,7 +991,9 @@ class Step1View(BaseStepView):
 
         self.notes_edit = QTextEdit()
         self.notes_edit.setPlaceholderText("Type your notes here...")
-        self.notes_edit.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.notes_edit.setSizePolicy(
+            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding
+        )
         self.notes_edit.setMinimumHeight(100)
         layout.addWidget(self.notes_edit)
 
@@ -1020,12 +1054,14 @@ class Step1View(BaseStepView):
         )
 
         # Dialog buttons
-        buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        buttons = QDialogButtonBox(
+            QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
+        )
         buttons.accepted.connect(dialog.accept)
         buttons.rejected.connect(dialog.reject)
         layout.addWidget(buttons)
 
-        if dialog.exec() == QDialog.Accepted:
+        if dialog.exec() == QDialog.DialogCode.Accepted:
             # Refresh combo box with updated programs
             current_text = self.group_combo.currentText()
             programs = program_config.get_all_programs()
@@ -1067,7 +1103,11 @@ class Step1View(BaseStepView):
         from PySide6.QtWidgets import QInputDialog
 
         new_name, ok = QInputDialog.getText(
-            self, "Edit Program", "New program name:", QLineEdit.Normal, old_name
+            self,
+            "Edit Program",
+            "New program name:",
+            QLineEdit.EchoMode.Normal,
+            old_name,
         )
         if ok and new_name:
             if new_name in default_programs:
@@ -1102,9 +1142,9 @@ class Step1View(BaseStepView):
             self,
             "Confirm",
             f"Remove program '{name}'?",
-            QMessageBox.Yes | QMessageBox.No,
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
         )
-        if reply == QMessageBox.Yes:
+        if reply == QMessageBox.StandardButton.Yes:
             if program_config.remove_program(name):
                 list_widget.takeItem(list_widget.row(current_item))
             else:
@@ -1396,12 +1436,14 @@ class Step1View(BaseStepView):
         layout.addRow("Patient ID:", patient_edit)
         layout.addRow("Run:", run_edit)
 
-        buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        buttons = QDialogButtonBox(
+            QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
+        )
         buttons.accepted.connect(dialog.accept)
         buttons.rejected.connect(dialog.reject)
         layout.addRow(buttons)
 
-        if dialog.exec() != QDialog.Accepted:
+        if dialog.exec() != QDialog.DialogCode.Accepted:
             return
 
         patient_id = patient_edit.text().strip() or "01"

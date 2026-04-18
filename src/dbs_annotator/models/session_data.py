@@ -198,7 +198,9 @@ class SessionData:
             stimulation: Stimulation parameters
             notes: Additional notes for this entry
         """
-        if not self.tsv_writer:
+        writer = self.tsv_writer
+        tsv_file = self.tsv_file
+        if writer is None or tsv_file is None:
             raise ValueError("TSV file not opened. Call open_file() first.")
 
         tz = self._resolve_timezone()
@@ -227,7 +229,7 @@ class SessionData:
                 "notes": notes,
                 **stim_dict,
             }
-            self.tsv_writer.writerow(row)
+            writer.writerow(row)
         else:
             # Write one row per scale
             for scale in valid_scales:
@@ -245,9 +247,9 @@ class SessionData:
                     "notes": notes,
                     **stim_dict,
                 }
-                self.tsv_writer.writerow(row)
+                writer.writerow(row)
 
-        self.tsv_file.flush()
+        tsv_file.flush()
         self.block_id += 1
 
     def write_session_scales(
@@ -266,7 +268,9 @@ class SessionData:
             stimulation: Stimulation parameters
             notes: Additional notes for this entry
         """
-        if not self.tsv_writer:
+        writer = self.tsv_writer
+        tsv_file = self.tsv_file
+        if writer is None or tsv_file is None:
             raise ValueError("TSV file not opened. Call open_file() first.")
 
         tz = self._resolve_timezone()
@@ -295,7 +299,7 @@ class SessionData:
                 "notes": notes,
                 **stim_dict,
             }
-            self.tsv_writer.writerow(row)
+            writer.writerow(row)
         else:
             # Write one row per scale
             for scale in valid_scales:
@@ -313,9 +317,9 @@ class SessionData:
                     "notes": notes,
                     **stim_dict,
                 }
-                self.tsv_writer.writerow(row)
+                writer.writerow(row)
 
-        self.tsv_file.flush()
+        tsv_file.flush()
         self.block_id += 1
 
     def is_file_open(self) -> bool:
@@ -430,6 +434,11 @@ class SessionData:
         if not self.is_file_open():
             raise ValueError("No file is open. Call initialize_simple_file first.")
 
+        writer = self.tsv_writer
+        tsv_file = self.tsv_file
+        if writer is None or tsv_file is None:
+            raise ValueError("No file is open. Call initialize_simple_file first.")
+
         # Get current time
         from datetime import datetime
 
@@ -445,5 +454,5 @@ class SessionData:
             "timezone": tz_str,
             "annotation": annotation,
         }
-        self.tsv_writer.writerow(row)
-        self.tsv_file.flush()
+        writer.writerow(row)
+        tsv_file.flush()

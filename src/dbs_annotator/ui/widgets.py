@@ -7,8 +7,8 @@ section labels, and horizontal lines.
 
 import typing
 
-from PySide6.QtCore import QByteArray, QEvent, QSize, Qt, Signal
-from PySide6.QtGui import QIcon, QPixmap
+from PySide6.QtCore import QByteArray, QEvent, QObject, QSize, Qt, Signal
+from PySide6.QtGui import QIcon, QMouseEvent, QPixmap
 from PySide6.QtWidgets import (
     QFrame,
     QHBoxLayout,
@@ -32,8 +32,8 @@ def create_horizontal_line() -> QFrame:
         QFrame configured as a horizontal line
     """
     line = QFrame()
-    line.setFrameShape(QFrame.HLine)
-    line.setFrameShadow(QFrame.Sunken)
+    line.setFrameShape(QFrame.Shape.HLine)
+    line.setFrameShadow(QFrame.Shadow.Sunken)
     line.setStyleSheet(
         f"background: {COLORS['separator']}; "
         "max-height: 2pt; min-height: 2pt; "
@@ -172,7 +172,7 @@ class IncrementWidget(QWidget):
         btn.setIconSize(QSize(icon_width, icon_height))
         increment_size = typing.cast(dict[str, int], BUTTON_SIZES["increment"])
         btn.setFixedSize(increment_size["width"], increment_size["height"])
-        btn.setCursor(Qt.PointingHandCursor)
+        btn.setCursor(Qt.CursorShape.PointingHandCursor)
         btn.setStyleSheet(
             """
             QPushButton {
@@ -265,7 +265,7 @@ class ScaleProgressWidget(QWidget):
         self.progress_bar.setMaximum(self._maximum)
         self.progress_bar.setValue(self._value)
         self.progress_bar.setFormat("0.00")
-        self.progress_bar.setCursor(Qt.PointingHandCursor)
+        self.progress_bar.setCursor(Qt.CursorShape.PointingHandCursor)
         self.progress_bar.valueChanged.connect(self._on_bar_value_changed)
 
         # Right controls
@@ -305,7 +305,7 @@ class ScaleProgressWidget(QWidget):
         btn.setFixedSize(w, h)
         btn.setIcon(icon)
         btn.setIconSize(QSize(w - 2, h - 2))
-        btn.setCursor(Qt.PointingHandCursor)
+        btn.setCursor(Qt.CursorShape.PointingHandCursor)
         btn.setStyleSheet(
             """
             QPushButton {
@@ -370,20 +370,27 @@ class ScaleProgressWidget(QWidget):
         return QIcon(pixmap)
 
     @typing.override
-    def eventFilter(self, obj, event):
+    def eventFilter(self, watched: QObject, event: QEvent) -> bool:
         """Handle mouse press/move/release on the progress bar for drag interaction."""
-        if obj == self.progress_bar:
-            if event.type() == QEvent.MouseButtonPress:
-                self._is_dragging = True
-                self._update_value_from_position(event.pos().x())
-                return True
-            if event.type() == QEvent.MouseMove and self._is_dragging:
-                self._update_value_from_position(event.pos().x())
-                return True
-            if event.type() == QEvent.MouseButtonRelease:
-                self._is_dragging = False
-                return True
-        return super().eventFilter(obj, event)
+        if watched == self.progress_bar:
+            et = event.type()
+            if et in (
+                QEvent.Type.MouseButtonPress,
+                QEvent.Type.MouseMove,
+                QEvent.Type.MouseButtonRelease,
+            ):
+                me = typing.cast(QMouseEvent, event)
+                if et == QEvent.Type.MouseButtonPress:
+                    self._is_dragging = True
+                    self._update_value_from_position(me.pos().x())
+                    return True
+                if et == QEvent.Type.MouseMove and self._is_dragging:
+                    self._update_value_from_position(me.pos().x())
+                    return True
+                if et == QEvent.Type.MouseButtonRelease:
+                    self._is_dragging = False
+                    return True
+        return super().eventFilter(watched, event)
 
     def _adjust_value(self, delta: int) -> None:
         """Increment or decrement the current value by *delta* steps."""
@@ -457,17 +464,17 @@ class ScaleProgressWidget(QWidget):
         self.progress_bar.setFormat(format_str)
 
     @typing.override
-    def setFixedWidth(self, width: int) -> None:
+    def setFixedWidth(self, w: int) -> None:
         """Override to allocate space for arrow buttons alongside the bar."""
         # Same reserve logic as previous implementation
-        bar_width = width - 120
+        bar_width = w - 120
         self.progress_bar.setFixedWidth(bar_width)
-        super().setFixedWidth(width)
+        super().setFixedWidth(w)
 
     @typing.override
-    def setToolTip(self, tooltip: str) -> None:
+    def setToolTip(self, arg__1: str) -> None:
         """Forward the tooltip to the inner progress bar."""
-        self.progress_bar.setToolTip(tooltip)
+        self.progress_bar.setToolTip(arg__1)
 
     def value(self) -> int:
         """Return the current internal value."""
@@ -478,10 +485,10 @@ class ScaleProgressWidget(QWidget):
         return self._disabled
 
     @typing.override
-    def setDisabled(self, disabled: bool) -> None:
+    def setDisabled(self, arg__1: bool) -> None:
         """Set the disabled state."""
-        if self._disabled != disabled:
-            self._disabled = disabled
+        if self._disabled != arg__1:
+            self._disabled = arg__1
             self._update_display()
             if not self._disabled:
                 self.valueChanged.emit(self._value)

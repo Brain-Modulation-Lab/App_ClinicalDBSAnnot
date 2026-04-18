@@ -16,7 +16,7 @@ def get_dpi_scale() -> float:
         float: DPI scale factor (1.0 = 96 DPI, 1.5 = 144 DPI, etc.)
     """
     app = QApplication.instance()
-    if app is None:
+    if not isinstance(app, QApplication):
         return 1.0
 
     screen = app.primaryScreen()

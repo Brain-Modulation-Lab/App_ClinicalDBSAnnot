@@ -13,6 +13,7 @@ from typing import Protocol
 from PySide6.QtCore import QSize, Qt
 from PySide6.QtGui import QIcon, QPixmap
 from PySide6.QtWidgets import (
+    QAbstractButton,
     QDialog,
     QFrame,
     QHBoxLayout,
@@ -154,7 +155,7 @@ class WizardWindow(QWidget):
         self.setMinimumSize(WINDOW_MIN_SIZE["width"], WINDOW_MIN_SIZE["height"])
 
         # Make window resizable
-        self.setWindowFlag(Qt.WindowMaximizeButtonHint, True)
+        self.setWindowFlag(Qt.WindowType.WindowMaximizeButtonHint, True)
 
         # Set smaller size for step 0 (mode selection)
         self._update_window_size_for_step0()
@@ -169,7 +170,9 @@ class WizardWindow(QWidget):
 
         # Create stacked widget for steps
         self.stack = QStackedWidget(self)
-        self.stack.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.stack.setSizePolicy(
+            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum
+        )
 
         self.stack.currentChanged.connect(lambda _: self._update_ui_state())
 
@@ -192,14 +195,20 @@ class WizardWindow(QWidget):
 
         self.stack_scroll_area = QScrollArea(self)
         self.stack_scroll_area.setWidgetResizable(True)
-        self.stack_scroll_area.setFrameShape(QFrame.NoFrame)
-        self.stack_scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        self.stack_scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        self.stack_scroll_area.setFrameShape(QFrame.Shape.NoFrame)
+        self.stack_scroll_area.setHorizontalScrollBarPolicy(
+            Qt.ScrollBarPolicy.ScrollBarAlwaysOff
+        )
+        self.stack_scroll_area.setVerticalScrollBarPolicy(
+            Qt.ScrollBarPolicy.ScrollBarAsNeeded
+        )
         self.stack_scroll_area.setWidget(self.stack)
         main_layout.addWidget(self.stack_scroll_area)
 
         # Add a spacer that can shrink/grow to help with resizing
-        spacer = QSpacerItem(20, 20, QSizePolicy.Minimum, QSizePolicy.Minimum)
+        spacer = QSpacerItem(
+            20, 20, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum
+        )
         main_layout.addItem(spacer)
 
         # Navigation bar
@@ -218,10 +227,14 @@ class WizardWindow(QWidget):
         # Left: logo + title
         self.header_logo_label = QLabel()
         if not self.logo_pixmap.isNull():
-            logo = self.logo_pixmap.scaledToWidth(34, Qt.SmoothTransformation)
+            logo = self.logo_pixmap.scaledToWidth(
+                34, Qt.TransformationMode.SmoothTransformation
+            )
             logo = rounded_pixmap(logo, 5)
             self.header_logo_label.setPixmap(logo)
-        self.header_logo_label.setAlignment(Qt.AlignVCenter | Qt.AlignLeft)
+        self.header_logo_label.setAlignment(
+            Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft
+        )
         header_layout.addWidget(self.header_logo_label)
 
         # Title and subtitle container
@@ -231,14 +244,18 @@ class WizardWindow(QWidget):
 
         self.header_title_label = QLabel("")
         self.header_title_label.setStyleSheet("font-size: 12pt; font-weight: 500;")
-        self.header_title_label.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
+        self.header_title_label.setAlignment(
+            Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter
+        )
         title_container.addWidget(self.header_title_label)
 
         self.header_subtitle_label = QLabel("")
         self.header_subtitle_label.setStyleSheet(
             "font-size: 8pt; color: #64748b; margin-top: -2px;"
         )
-        self.header_subtitle_label.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
+        self.header_subtitle_label.setAlignment(
+            Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter
+        )
         title_container.addWidget(self.header_subtitle_label)
 
         header_layout.addLayout(title_container)
@@ -248,7 +265,7 @@ class WizardWindow(QWidget):
         self.theme_toggle_btn = QPushButton()
         self.theme_toggle_btn.setObjectName("theme_toggle")
         self.theme_toggle_btn.setToolTip("Switch between Dark and Light mode")
-        self.theme_toggle_btn.setCursor(Qt.PointingHandCursor)
+        self.theme_toggle_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         self._update_theme_button_icon()
 
         self.theme_toggle_btn.clicked.connect(self._toggle_theme)
@@ -259,7 +276,7 @@ class WizardWindow(QWidget):
         self.info_btn = QPushButton()
         self.info_btn.setObjectName("info_button")
         self.info_btn.setToolTip("Info / Help")
-        self.info_btn.setCursor(Qt.PointingHandCursor)
+        self.info_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         self.info_btn.setText("Help")
         self.info_btn.clicked.connect(self._show_info_dialog)
         header_layout.addWidget(self.info_btn)
@@ -334,13 +351,13 @@ class WizardWindow(QWidget):
         dialog = QDialog(self)
         dialog.setWindowTitle("About Clinical DBS Annotator")
         dialog.setMinimumSize(600, 500)
-        dialog.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        dialog.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
 
         layout = QVBoxLayout(dialog)
 
         # Title and version
         title_label = QLabel(f"<h2>{APP_NAME} v{APP_VERSION}</h2>")
-        title_label.setAlignment(Qt.AlignCenter)
+        title_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(title_label)
 
         # Description
@@ -457,16 +474,21 @@ class WizardWindow(QWidget):
 
     def _connect_longitudinal_signals(self) -> None:
         """Connect signals for the longitudinal file view."""
-        self.longitudinal_file_view.export_word_action.triggered.connect(
+        view = self.longitudinal_file_view
+        assert view is not None
+        view.export_word_action.triggered.connect(
             lambda: self._export_longitudinal_report("word")
         )
-        self.longitudinal_file_view.export_pdf_action.triggered.connect(
+        view.export_pdf_action.triggered.connect(
             lambda: self._export_longitudinal_report("pdf")
         )
 
     def _export_longitudinal_report(self, fmt: str) -> None:
         """Handle longitudinal report export (Word or PDF)."""
-        files = self.longitudinal_file_view.get_loaded_files()
+        view = self.longitudinal_file_view
+        if view is None:
+            return
+        files = view.get_loaded_files()
         if not files:
             QMessageBox.warning(
                 self,
@@ -500,7 +522,7 @@ class WizardWindow(QWidget):
             self,
             clinical_scales=clinical_scales if clinical_scales else None,
         )
-        if dialog.exec() != QDialog.Accepted:
+        if dialog.exec() != QDialog.DialogCode.Accepted:
             return
 
         prefs = dialog.get_scale_prefs()
@@ -518,7 +540,7 @@ class WizardWindow(QWidget):
             ("programming_summary", "Programming Summary", False, None),
         ]
         sec_dialog = ReportSectionsDialog(section_defs, self, title="Report Sections")
-        if sec_dialog.exec() != QDialog.Accepted:
+        if sec_dialog.exec() != QDialog.DialogCode.Accepted:
             return
         sections = sec_dialog.get_selected_sections()
 
@@ -582,7 +604,7 @@ class WizardWindow(QWidget):
 
         # Force stack to reset its size - critical for preventing button shift from view1
         if hasattr(self, "stack"):
-            self.stack.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+            self.stack.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
             self.stack.setFixedWidth(compact_width - 40)  # Account for margins
             self.stack.setFixedHeight(
                 compact_height - 100
@@ -590,7 +612,7 @@ class WizardWindow(QWidget):
             self.stack.adjustSize()
         if hasattr(self, "stack_scroll_area"):
             self.stack_scroll_area.setSizePolicy(
-                QSizePolicy.Expanding, QSizePolicy.Expanding
+                QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding
             )
 
         # Center the compact window on screen
@@ -607,12 +629,14 @@ class WizardWindow(QWidget):
         """Restore normal window size for main workflow (steps 1+)."""
         # Restore normal size policies and remove fixed constraints from step0
         if hasattr(self, "stack"):
-            self.stack.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
+            self.stack.setSizePolicy(
+                QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum
+            )
             self.stack.setMaximumWidth(16777215)  # Remove fixed width
             self.stack.setMaximumHeight(16777215)  # Remove fixed height
         if hasattr(self, "stack_scroll_area"):
             self.stack_scroll_area.setSizePolicy(
-                QSizePolicy.Expanding, QSizePolicy.Expanding
+                QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding
             )
 
         # Get original normal size
@@ -684,71 +708,71 @@ class WizardWindow(QWidget):
 
     def _connect_step1_signals(self) -> None:
         """Connect Step 1 view signals to controller."""
+        step1 = self.step1_view
+        assert step1 is not None
         # Connect preset buttons
         preset_manager = get_scale_preset_manager()
         clinical_presets = preset_manager.get_clinical_presets()
         for preset_name in clinical_presets.keys():
-            btn = self.step1_view.get_preset_button(preset_name)
+            btn = step1.get_preset_button(preset_name)
             if btn:
                 btn.clicked.connect(
                     lambda checked, name=preset_name: (
-                        self.controller.apply_clinical_preset(name, self.step1_view)
+                        self.controller.apply_clinical_preset(name, step1)
                     )
                 )
 
         # Initialize empty clinical scales
-        self.step1_view.update_clinical_scales(
+        step1.update_clinical_scales(
             [],
-            on_add_callback=lambda: self.controller.on_add_clinical_scale(
-                self.step1_view
-            ),
+            on_add_callback=lambda: self.controller.on_add_clinical_scale(step1),
             on_remove_callback=lambda row: self.controller.on_remove_clinical_scale(
-                self.step1_view, row
+                step1, row
             ),
         )
 
         # Connect next button
-        self.step1_view.next_button.clicked.connect(self._go_to_step2)
+        step1.next_button.clicked.connect(self._go_to_step2)
 
     def _connect_step2_signals(self) -> None:
         """Connect Step 2 view signals to controller."""
-        self.controller.prepare_step2(self.step2_view)
+        step2 = self.step2_view
+        assert step2 is not None
+        self.controller.prepare_step2(step2)
         # Connect preset buttons
         preset_manager = get_scale_preset_manager()
         session_presets = preset_manager.get_session_presets()
         for preset_name in session_presets.keys():
-            btn = self.step2_view.get_preset_button(preset_name)
+            btn = step2.get_preset_button(preset_name)
             if btn:
                 btn.clicked.connect(
                     lambda checked, name=preset_name: (
-                        self.controller.apply_session_preset(name, self.step2_view)
+                        self.controller.apply_session_preset(name, step2)
                     )
                 )
-        self.step2_view.next_button.clicked.connect(self._go_to_step3)
+        step2.next_button.clicked.connect(self._go_to_step3)
 
         # Auto-select session preset if clinical scales match
         # Moved to _go_to_step2 to be called every time navigating to step2
 
     def _connect_step3_signals(self) -> None:
         """Connect Step 3 view signals to controller."""
-        self.controller.prepare_step3(self.step3_view)
-        if hasattr(self.step3_view, "undo_button"):
-            self.step3_view.undo_button.clicked.connect(
-                self.step3_view._undo_last_entry
-            )
-        self.step3_view.undo_requested.connect(
-            lambda: self.controller.undo_last_session_entry(self.step3_view)
+        step3 = self.step3_view
+        assert step3 is not None
+        self.controller.prepare_step3(step3)
+        if hasattr(step3, "undo_button"):
+            step3.undo_button.clicked.connect(step3._undo_last_entry)
+        step3.undo_requested.connect(
+            lambda: self.controller.undo_last_session_entry(step3)
         )
-        self.step3_view.insert_button.clicked.connect(
-            lambda: self.controller.insert_session_row(self.step3_view)
+        step3.insert_button.clicked.connect(
+            lambda: self.controller.insert_session_row(step3)
         )
-        self.step3_view.close_button.clicked.connect(
-            lambda: self.controller.close_session(self)
-        )
-        self.step3_view.export_word_action.triggered.connect(
+        step3.close_button.clicked.connect(lambda: self.controller.close_session(self))
+        step3.export_word_action.triggered.connect(
             lambda: self._export_session_report("word")
         )
-        self.step3_view.export_pdf_action.triggered.connect(
+        step3.export_pdf_action.triggered.connect(
             lambda: self._export_session_report("pdf")
         )
 
@@ -767,7 +791,7 @@ class WizardWindow(QWidget):
         from .export_dialog import ScaleTargetValuesDialog
 
         dialog = ScaleTargetValuesDialog(scales, self)
-        if dialog.exec() != QDialog.Accepted:
+        if dialog.exec() != QDialog.DialogCode.Accepted:
             return
 
         prefs = dialog.get_scale_prefs()
@@ -786,7 +810,7 @@ class WizardWindow(QWidget):
             ("programming_summary", "Programming Summary", True, None),
         ]
         sec_dialog = ReportSectionsDialog(section_defs, self, title="Report Sections")
-        if sec_dialog.exec() != QDialog.Accepted:
+        if sec_dialog.exec() != QDialog.DialogCode.Accepted:
             return
         sections = sec_dialog.get_selected_sections()
 
@@ -809,7 +833,9 @@ class WizardWindow(QWidget):
         nav_layout = QHBoxLayout()
 
         self.back_button = QPushButton("Back")
-        self.back_button.setIcon(self.style().standardIcon(QStyle.SP_ArrowBack))
+        self.back_button.setIcon(
+            self.style().standardIcon(QStyle.StandardPixmap.SP_ArrowBack)
+        )
         self.back_button.setIconSize(QSize(22, 22))
         self.back_button.setFixedWidth(140)
         self.back_button.clicked.connect(self._go_back)
@@ -890,17 +916,16 @@ class WizardWindow(QWidget):
 
     def _connect_annotations_file_signals(self) -> None:
         """Connect signals for annotations file view."""
+        afv = self.annotations_file_view
+        assert afv is not None
         # Backward-compatible: older AnnotationsFileView exposed browse_button.
         # Newer UI manages file open/new internally.
-        if hasattr(self.annotations_file_view, "browse_button"):
-            self.annotations_file_view.browse_button.clicked.connect(
-                lambda: self.controller.browse_save_location_simple(
-                    self.annotations_file_view, self
-                )
+        browse_btn = getattr(afv, "browse_button", None)
+        if isinstance(browse_btn, QAbstractButton):
+            browse_btn.clicked.connect(
+                lambda: self.controller.browse_save_location_simple(afv, self)
             )
-        self.annotations_file_view.next_button.clicked.connect(
-            self._go_to_annotations_session
-        )
+        afv.next_button.clicked.connect(self._go_to_annotations_session)
 
     def _go_to_annotations_session(self) -> None:
         """Navigate to annotations session (annotations-only workflow)."""
@@ -922,21 +947,19 @@ class WizardWindow(QWidget):
 
     def _connect_annotations_session_signals(self) -> None:
         """Connect signals for annotations session view."""
-        self.annotations_session_view.insert_button.clicked.connect(
-            lambda: self.controller.insert_simple_annotation(
-                self.annotations_session_view
-            )
+        asv = self.annotations_session_view
+        assert asv is not None
+        asv.insert_button.clicked.connect(
+            lambda: self.controller.insert_simple_annotation(asv)
         )
-        self.annotations_session_view.close_button.clicked.connect(
-            lambda: self.controller.close_session(self)
-        )
+        asv.close_button.clicked.connect(lambda: self.controller.close_session(self))
 
-        if hasattr(self.annotations_session_view, "export_word_action"):
-            self.annotations_session_view.export_word_action.triggered.connect(
+        if hasattr(asv, "export_word_action"):
+            asv.export_word_action.triggered.connect(
                 lambda: self.controller.export_annotations_word(self)
             )
-        if hasattr(self.annotations_session_view, "export_pdf_action"):
-            self.annotations_session_view.export_pdf_action.triggered.connect(
+        if hasattr(asv, "export_pdf_action"):
+            asv.export_pdf_action.triggered.connect(
                 lambda: self.controller.export_annotations_pdf(self)
             )
 

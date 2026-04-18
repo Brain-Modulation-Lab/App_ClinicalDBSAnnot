@@ -47,7 +47,9 @@ class AnnotationsFileView(QWidget):
         self.main_layout.addStretch(1)
 
         self.next_button = QPushButton("Next")
-        self.next_button.setIcon(self.parent_style.standardIcon(QStyle.SP_ArrowForward))
+        self.next_button.setIcon(
+            self.parent_style.standardIcon(QStyle.StandardPixmap.SP_ArrowForward)
+        )
         self.next_button.setIconSize(QSize(16, 16))
         self.next_button.setMaximumWidth(120)
 
@@ -122,12 +124,14 @@ class AnnotationsFileView(QWidget):
         layout.addRow("Patient ID:", patient_edit)
         layout.addRow("Run:", run_edit)
 
-        buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        buttons = QDialogButtonBox(
+            QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
+        )
         buttons.accepted.connect(dialog.accept)
         buttons.rejected.connect(dialog.reject)
         layout.addRow(buttons)
 
-        if dialog.exec() != QDialog.Accepted:
+        if dialog.exec() != QDialog.DialogCode.Accepted:
             return
 
         patient_id = patient_edit.text().strip() or "01"
@@ -165,13 +169,15 @@ class AnnotationsFileView(QWidget):
         """Create the file upload group with drop zone, Open, and New buttons."""
         gb_upload = QGroupBox("Upload TSV file")
         gb_upload.setFixedHeight(100)
-        gb_upload.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        gb_upload.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
 
         layout = QHBoxLayout(gb_upload)
 
         self.file_path_edit = FileDropLineEdit(self._on_file_dropped)
         self.file_path_edit.setFixedHeight(45)
-        self.file_path_edit.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        self.file_path_edit.setSizePolicy(
+            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed
+        )
         self.file_path_edit.setReadOnly(True)
         self.file_path_edit.setClearButtonEnabled(False)
         self.file_path_edit.textChanged.connect(self._on_file_path_changed)
@@ -219,19 +225,19 @@ class AnnotationsSessionView(QWidget):
 
         self.insert_button = QPushButton("Insert")
         self.insert_button.setIcon(
-            self.parent_style.standardIcon(QStyle.SP_DialogApplyButton)
+            self.parent_style.standardIcon(QStyle.StandardPixmap.SP_DialogApplyButton)
         )
         self.insert_button.setMinimumWidth(170)
 
         self.close_button = QPushButton("Close Session")
         self.close_button.setIcon(
-            self.parent_style.standardIcon(QStyle.SP_DialogCloseButton)
+            self.parent_style.standardIcon(QStyle.StandardPixmap.SP_DialogCloseButton)
         )
         self.close_button.setMinimumWidth(170)
 
         self.export_button = QPushButton("Export Report")
         self.export_button.setIcon(
-            self.parent_style.standardIcon(QStyle.SP_DialogSaveButton)
+            self.parent_style.standardIcon(QStyle.StandardPixmap.SP_DialogSaveButton)
         )
         self.export_button.setMinimumWidth(170)
 
@@ -243,7 +249,7 @@ class AnnotationsSessionView(QWidget):
     def _create_annotation_group(self) -> QGroupBox:
         """Create the annotation input group box."""
         gb_annotation = QGroupBox("Session Annotations")
-        #   gb_annotation.setFont(QFont("Segoe UI", 10, QFont.Bold))
+        #   gb_annotation.setFont(QFont("Segoe UI", 10, QFont.Weight.Bold))
 
         layout = QVBoxLayout(gb_annotation)
         layout.setSpacing(10)
@@ -260,7 +266,9 @@ class AnnotationsSessionView(QWidget):
         # Annotation text area
         self.annotation_edit = QTextEdit()
         self.annotation_edit.setPlaceholderText("Type your notes here...")
-        self.annotation_edit.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.annotation_edit.setSizePolicy(
+            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding
+        )
         self.annotation_edit.setMinimumHeight(50)
         layout.addWidget(self.annotation_edit)
 

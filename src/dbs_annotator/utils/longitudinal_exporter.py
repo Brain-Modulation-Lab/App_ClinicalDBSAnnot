@@ -1438,18 +1438,18 @@ class LongitudinalExporter:
 
             def white_bg_paint(event):
                 painter = QPainter(canvas)
-                painter.fillRect(canvas.rect(), Qt.white)
+                painter.fillRect(canvas.rect(), Qt.GlobalColor.white)
                 original_paint(event)
 
             canvas.paintEvent = white_bg_paint  # type: ignore[assignment]  # ty: ignore[invalid-assignment]
 
             pixmap = QPixmap(canvas.size())
-            pixmap.fill(Qt.white)
+            pixmap.fill(Qt.GlobalColor.white)
             canvas.render(pixmap)
 
             # Crop white borders
             image = pixmap.toImage()
-            white_rgb = _QColor(Qt.white).rgb()
+            white_rgb = _QColor(Qt.GlobalColor.white).rgb()
             left, top, right, bottom = image.width(), image.height(), 0, 0
             for y in range(image.height()):
                 for x in range(image.width()):
@@ -1611,11 +1611,11 @@ class LongitudinalExporter:
         self, parent, title: str, text: str, msecs: int = 2000
     ) -> None:
         msg = QMessageBox(parent)
-        msg.setIcon(QMessageBox.Information)
+        msg.setIcon(QMessageBox.Icon.Information)
         msg.setWindowTitle(title)
         msg.setText(text)
-        msg.setStandardButtons(QMessageBox.NoButton)
-        msg.setWindowModality(Qt.NonModal)
+        msg.setStandardButtons(QMessageBox.StandardButton.NoButton)
+        msg.setWindowModality(Qt.WindowModality.NonModal)
         msg.show()
 
         timer = QTimer(msg)

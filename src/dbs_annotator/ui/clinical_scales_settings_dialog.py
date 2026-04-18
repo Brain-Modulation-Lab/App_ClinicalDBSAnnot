@@ -6,8 +6,8 @@ import json
 import os
 import typing
 
-from PySide6.QtCore import QEvent, Qt, Signal
-from PySide6.QtGui import QCloseEvent, QFont
+from PySide6.QtCore import QEvent, QObject, Qt, Signal
+from PySide6.QtGui import QCloseEvent, QFont, QMouseEvent
 from PySide6.QtWidgets import (
     QDialog,
     QFormLayout,
@@ -58,8 +58,8 @@ class ClinicalScalesSettingsDialog(QDialog):
 
         # Title
         title = QLabel("Edit Clinical Scales Presets")
-        title.setFont(QFont("Segoe UI", 12, QFont.Bold))
-        title.setAlignment(Qt.AlignCenter)
+        title.setFont(QFont("Segoe UI", 12, QFont.Weight.Bold))
+        title.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(title)
 
         # Presets list
@@ -119,24 +119,25 @@ class ClinicalScalesSettingsDialog(QDialog):
         self.presets_list.viewport().installEventFilter(self)
 
     @typing.override
-    def eventFilter(self, obj, event):
+    def eventFilter(self, arg__1: QObject, arg__2: QEvent) -> bool:
         """Handle clicks on empty space for deselection."""
         if (
-            obj == self.presets_list.viewport()
-            and event.type() == QEvent.MouseButtonPress
+            arg__1 == self.presets_list.viewport()
+            and arg__2.type() == QEvent.Type.MouseButtonPress
         ):
-            if event.button() == Qt.LeftButton:
+            me = typing.cast(QMouseEvent, arg__2)
+            if me.button() == Qt.MouseButton.LeftButton:
                 # Check if click is on empty space
-                item = self.presets_list.itemAt(event.pos())
+                item = self.presets_list.itemAt(me.pos())
                 if item is None:
                     self._clear_selection()
-        return super().eventFilter(obj, event)
+        return super().eventFilter(arg__1, arg__2)
 
     @typing.override
     def mousePressEvent(self, event):
         """Deselect preset when clicking outside the list widget."""
         # If user clicks outside the list, clear selection
-        if event.button() == Qt.LeftButton:
+        if event.button() == Qt.MouseButton.LeftButton:
             list_rect = self.presets_list.geometry()
             if not list_rect.contains(event.pos()):
                 self._clear_selection()
@@ -174,7 +175,7 @@ class ClinicalScalesSettingsDialog(QDialog):
         for name, scales in self.current_presets.items():
             item_text = f"{name}: {', '.join(scales)}"
             item = QListWidgetItem(item_text)
-            item.setData(Qt.UserRole, name)
+            item.setData(Qt.ItemDataRole.UserRole, name)
             self.presets_list.addItem(item)
 
     def _on_preset_selected(self):
@@ -186,7 +187,7 @@ class ClinicalScalesSettingsDialog(QDialog):
             return
 
         item = selected_items[0]
-        preset_name = item.data(Qt.UserRole)
+        preset_name = item.data(Qt.ItemDataRole.UserRole)
 
         if preset_name in self.current_presets:
             self.preset_name_edit.setText(preset_name)
@@ -212,7 +213,7 @@ class ClinicalScalesSettingsDialog(QDialog):
         # Select the newly added/updated preset in the list
         for i in range(self.presets_list.count()):
             item = self.presets_list.item(i)
-            if item and item.data(Qt.UserRole) == name:
+            if item and item.data(Qt.ItemDataRole.UserRole) == name:
                 self.presets_list.setCurrentItem(item)
                 break
 
@@ -223,16 +224,16 @@ class ClinicalScalesSettingsDialog(QDialog):
             return
 
         item = selected_items[0]
-        preset_name = item.data(Qt.UserRole)
+        preset_name = item.data(Qt.ItemDataRole.UserRole)
 
         reply = QMessageBox.question(
             self,
             "Confirm Delete",
             f"Are you sure you want to delete preset '{preset_name}'?",
-            QMessageBox.Yes | QMessageBox.No,
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
         )
 
-        if reply == QMessageBox.Yes:
+        if reply == QMessageBox.StandardButton.Yes:
             del self.current_presets[preset_name]
             self._update_presets_list()
 
@@ -259,7 +260,7 @@ class ClinicalScalesSettingsDialog(QDialog):
             QMessageBox.critical(self, "Error", f"Error saving presets: {e}")
 
     @typing.override
-    def closeEvent(self, event: QCloseEvent):
+    def closeEvent(self, arg__1: QCloseEvent) -> None:
         """Handle dialog close event to save changes."""
         # Save changes before closing
         try:
@@ -277,4 +278,4 @@ class ClinicalScalesSettingsDialog(QDialog):
             # Don't show error message on close to avoid annoying the user
             pass
 
-        super().closeEvent(event)
+        super().closeEvent(arg__1)

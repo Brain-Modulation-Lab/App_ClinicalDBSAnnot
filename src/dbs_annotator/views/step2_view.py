@@ -11,6 +11,7 @@ from collections.abc import Callable
 from PySide6.QtCore import QSize, Qt
 from PySide6.QtGui import QFont
 from PySide6.QtWidgets import (
+    QFrame,
     QGroupBox,
     QHBoxLayout,
     QLabel,
@@ -72,7 +73,9 @@ class Step2View(BaseStepView):
         # self.main_layout.addStretch(1)
 
         self.next_button = QPushButton("Next")
-        self.next_button.setIcon(self.parent_style.standardIcon(QStyle.SP_ArrowForward))
+        self.next_button.setIcon(
+            self.parent_style.standardIcon(QStyle.StandardPixmap.SP_ArrowForward)
+        )
         self.next_button.setIconSize(QSize(16, 16))
         self.next_button.setMaximumWidth(120)
 
@@ -82,8 +85,10 @@ class Step2View(BaseStepView):
         gb_session.setStyleSheet(
             "QGroupBox::title { color: #ff8800; font-size: 11pt; font-weight: 600; }"
         )
-        gb_session.setFont(QFont("Segoe UI", 10, QFont.Bold))
-        gb_session.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        gb_session.setFont(QFont("Segoe UI", 10, QFont.Weight.Bold))
+        gb_session.setSizePolicy(
+            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding
+        )
 
         layout = QVBoxLayout(gb_session)
 
@@ -105,7 +110,9 @@ class Step2View(BaseStepView):
 
         # Container for dynamic scale rows - expands to show all rows
         scroll_content = QWidget()
-        scroll_content.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
+        scroll_content.setSizePolicy(
+            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum
+        )
         self.session_scales_container = QVBoxLayout(scroll_content)
         self.session_scales_container.setContentsMargins(0, 0, 0, 0)
 
@@ -121,10 +128,12 @@ class Step2View(BaseStepView):
             }
         """)
         scroll_area.setWidgetResizable(True)
-        scroll_area.setFrameShape(QScrollArea.NoFrame)
-        scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
-        scroll_area.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
+        scroll_area.setFrameShape(QFrame.Shape.NoFrame)
+        scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+        scroll_area.setSizePolicy(
+            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum
+        )
         scroll_area.setWidget(scroll_content)
 
         layout.addWidget(scroll_area)

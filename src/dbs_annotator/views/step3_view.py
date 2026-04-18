@@ -105,11 +105,11 @@ class Step3View(BaseStepView):
             self,
             "Confirm Undo",
             "Are you sure you want to delete the last session entry?",
-            QMessageBox.Yes | QMessageBox.No,
-            QMessageBox.No,
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.No,
         )
 
-        if reply == QMessageBox.Yes:
+        if reply == QMessageBox.StandardButton.Yes:
             # Emit signal to request undo
             self.undo_requested.emit()
 
@@ -136,7 +136,7 @@ class Step3View(BaseStepView):
         right_widget.setMinimumWidth(400)
 
         # Splitter: right panel shrinks first (stretch=1), left stays stable (stretch=0)
-        splitter = QSplitter(Qt.Horizontal)
+        splitter = QSplitter(Qt.Orientation.Horizontal)
         splitter.addWidget(left_widget)
         splitter.addWidget(right_widget)
         splitter.setStretchFactor(0, 0)
@@ -147,26 +147,26 @@ class Step3View(BaseStepView):
 
         self.undo_button = QPushButton("Undo")
         self.undo_button.setIcon(
-            self.parent_style.standardIcon(QStyle.SP_DialogCancelButton)
+            self.parent_style.standardIcon(QStyle.StandardPixmap.SP_DialogCancelButton)
         )
         self.undo_button.setMinimumWidth(100)
         self.undo_button.setEnabled(False)
 
         self.insert_button = QPushButton("Insert")
         self.insert_button.setIcon(
-            self.parent_style.standardIcon(QStyle.SP_DialogApplyButton)
+            self.parent_style.standardIcon(QStyle.StandardPixmap.SP_DialogApplyButton)
         )
         self.insert_button.setMinimumWidth(170)
 
         self.export_button = QPushButton("Export Report")
         self.export_button.setIcon(
-            self.parent_style.standardIcon(QStyle.SP_DialogSaveButton)
+            self.parent_style.standardIcon(QStyle.StandardPixmap.SP_DialogSaveButton)
         )
         self.export_button.setMinimumWidth(170)
 
         self.close_button = QPushButton("Close session")
         self.close_button.setIcon(
-            self.parent_style.standardIcon(QStyle.SP_DialogCloseButton)
+            self.parent_style.standardIcon(QStyle.StandardPixmap.SP_DialogCloseButton)
         )
         self.close_button.setMinimumWidth(170)
 
@@ -187,7 +187,9 @@ class Step3View(BaseStepView):
     def _create_session_settings_group(self) -> QGroupBox:
         """Create the session settings group box."""
         gb_session = QGroupBox("Session settings")
-        gb_session.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        gb_session.setSizePolicy(
+            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding
+        )
 
         container_layout = QHBoxLayout()
 
@@ -196,10 +198,12 @@ class Step3View(BaseStepView):
         group_row = QGroupBox("Program")
         group_row_layout = QHBoxLayout()
         self.group_combo = QComboBox()
-        self.group_combo.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        self.group_combo.setSizePolicy(
+            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed
+        )
         # Prevent focus rectangle on dropdown
         self.group_combo.view().window().setAttribute(
-            Qt.WA_TranslucentBackground, False
+            Qt.WidgetAttribute.WA_TranslucentBackground, False
         )
         self.group_combo.view().setStyleSheet("QAbstractItemView { outline: none; }")
         # Load program names from config
@@ -224,7 +228,9 @@ class Step3View(BaseStepView):
         pw_limits = STIMULATION_LIMITS["pulse_width"]
 
         self.left_group = QGroupBox("Left")
-        self.left_group.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.left_group.setSizePolicy(
+            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding
+        )
         left_group_layout = QVBoxLayout()
 
         freq_row = QHBoxLayout()
@@ -297,21 +303,29 @@ class Step3View(BaseStepView):
 
         self.left_config_box = QFrame()
         self.left_config_box.setStyleSheet("background: transparent; border: none;")
-        self.left_config_box.setAttribute(Qt.WA_TranslucentBackground, True)
-        self.left_config_box.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.left_config_box.setAttribute(
+            Qt.WidgetAttribute.WA_TranslucentBackground, True
+        )
+        self.left_config_box.setSizePolicy(
+            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding
+        )
         left_config_layout = QVBoxLayout(self.left_config_box)
         left_config_layout.setContentsMargins(6, 4, 6, 4)
         self.left_config_label = QLabel()
         self.left_config_label.setWordWrap(True)
-        self.left_config_label.setTextInteractionFlags(Qt.TextSelectableByMouse)
-        self.left_config_label.setTextFormat(Qt.RichText)
+        self.left_config_label.setTextInteractionFlags(
+            Qt.TextInteractionFlag.TextSelectableByMouse
+        )
+        self.left_config_label.setTextFormat(Qt.TextFormat.RichText)
         left_config_layout.addWidget(self.left_config_label)
         left_group_layout.addWidget(self.left_config_box)
         left_group_layout.addStretch(1)
         self.left_group.setLayout(left_group_layout)
 
         self.right_group = QGroupBox("Right")
-        self.right_group.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.right_group.setSizePolicy(
+            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding
+        )
         right_group_layout = QVBoxLayout()
 
         freq_row = QHBoxLayout()
@@ -384,16 +398,20 @@ class Step3View(BaseStepView):
 
         self.right_config_box = QFrame()
         self.right_config_box.setStyleSheet("background: transparent; border: none;")
-        self.right_config_box.setAttribute(Qt.WA_TranslucentBackground, True)
+        self.right_config_box.setAttribute(
+            Qt.WidgetAttribute.WA_TranslucentBackground, True
+        )
         self.right_config_box.setSizePolicy(
-            QSizePolicy.Expanding, QSizePolicy.Expanding
+            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding
         )
         right_config_layout = QVBoxLayout(self.right_config_box)
         right_config_layout.setContentsMargins(6, 4, 6, 4)
         self.right_config_label = QLabel()
         self.right_config_label.setWordWrap(True)
-        self.right_config_label.setTextInteractionFlags(Qt.TextSelectableByMouse)
-        self.right_config_label.setTextFormat(Qt.RichText)
+        self.right_config_label.setTextInteractionFlags(
+            Qt.TextInteractionFlag.TextSelectableByMouse
+        )
+        self.right_config_label.setTextFormat(Qt.TextFormat.RichText)
         right_config_layout.addWidget(self.right_config_label)
         right_group_layout.addWidget(self.right_config_box)
         right_group_layout.addStretch(1)
@@ -417,9 +435,11 @@ class Step3View(BaseStepView):
             }
         """)
         sidebar_scroll.setWidgetResizable(True)
-        sidebar_scroll.setFrameShape(QFrame.NoFrame)
-        sidebar_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        sidebar_scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        sidebar_scroll.setFrameShape(QFrame.Shape.NoFrame)
+        sidebar_scroll.setHorizontalScrollBarPolicy(
+            Qt.ScrollBarPolicy.ScrollBarAlwaysOff
+        )
+        sidebar_scroll.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
         sidebar_scroll.setMinimumWidth(380)
         sidebar_scroll.setWidget(sidebar_widget)
 
@@ -677,15 +697,17 @@ class Step3View(BaseStepView):
     def _create_session_scales_group(self) -> QGroupBox:
         """Create the session scales group box."""
         gb_scales = QGroupBox("Session scales")
-        gb_scales.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        gb_scales.setSizePolicy(
+            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding
+        )
 
         layout = QVBoxLayout(gb_scales)
         layout.setSpacing(10)
 
         # Scales form
         self.step3_session_scales_form = QFormLayout()
-        self.step3_session_scales_form.setLabelAlignment(Qt.AlignRight)
-        self.step3_session_scales_form.setFormAlignment(Qt.AlignTop)
+        self.step3_session_scales_form.setLabelAlignment(Qt.AlignmentFlag.AlignRight)
+        self.step3_session_scales_form.setFormAlignment(Qt.AlignmentFlag.AlignTop)
         layout.addLayout(self.step3_session_scales_form)
         layout.addStretch()
 
@@ -721,7 +743,9 @@ class Step3View(BaseStepView):
 
     def _create_session_notes_group(self) -> QGroupBox:
         gb_notes = QGroupBox("Session notes")
-        gb_notes.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        gb_notes.setSizePolicy(
+            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding
+        )
 
         layout = QVBoxLayout(gb_notes)
         layout.setSpacing(10)
@@ -739,7 +763,7 @@ class Step3View(BaseStepView):
         self.session_notes_edit = QTextEdit()
         self.session_notes_edit.setPlaceholderText("Type your notes here...")
         self.session_notes_edit.setSizePolicy(
-            QSizePolicy.Expanding, QSizePolicy.Expanding
+            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding
         )
         self.session_notes_edit.setMinimumHeight(100)
         layout.addWidget(self.session_notes_edit)
@@ -753,9 +777,13 @@ class Step3View(BaseStepView):
         Args:
             scale_names: List of scale names to display
         """
+        form = self.step3_session_scales_form
+        if form is None:
+            return
+
         # Clear existing form
-        while self.step3_session_scales_form.rowCount():
-            self.step3_session_scales_form.removeRow(0)
+        while form.rowCount():
+            form.removeRow(0)
 
         self.session_scale_value_edits = []
 
@@ -797,7 +825,7 @@ class Step3View(BaseStepView):
             w.setMaximum(int(round(max_f * 4)))
             w.setValue(int(round(min_f * 4)))
 
-            self.step3_session_scales_form.addRow(QLabel(name + ":"), w)
+            form.addRow(QLabel(name + ":"), w)
             self.session_scale_value_edits.append((name, w))
 
     def set_initial_stimulation_params(
@@ -1037,12 +1065,14 @@ class Step3View(BaseStepView):
         )
 
         # Dialog buttons
-        buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        buttons = QDialogButtonBox(
+            QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
+        )
         buttons.accepted.connect(dialog.accept)
         buttons.rejected.connect(dialog.reject)
         layout.addWidget(buttons)
 
-        if dialog.exec() == QDialog.Accepted:
+        if dialog.exec() == QDialog.DialogCode.Accepted:
             # Refresh combo box with updated programs
             current_text = self.group_combo.currentText()
             programs = program_config.get_all_programs()
@@ -1084,7 +1114,11 @@ class Step3View(BaseStepView):
         from PySide6.QtWidgets import QInputDialog
 
         new_name, ok = QInputDialog.getText(
-            self, "Edit Program", "New program name:", QLineEdit.Normal, old_name
+            self,
+            "Edit Program",
+            "New program name:",
+            QLineEdit.EchoMode.Normal,
+            old_name,
         )
         if ok and new_name:
             if new_name in default_programs:
@@ -1119,9 +1153,9 @@ class Step3View(BaseStepView):
             self,
             "Confirm",
             f"Remove program '{name}'?",
-            QMessageBox.Yes | QMessageBox.No,
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
         )
-        if reply == QMessageBox.Yes:
+        if reply == QMessageBox.StandardButton.Yes:
             if program_config.remove_program(name):
                 list_widget.takeItem(list_widget.row(current_item))
             else:

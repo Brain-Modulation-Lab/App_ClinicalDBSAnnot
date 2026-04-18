@@ -194,7 +194,7 @@ class AmplitudeSplitWidget(QWidget):
         # Percentage edit
         pct_edit = QLineEdit()
         pct_edit.setMaximumWidth(55)
-        pct_edit.setAlignment(Qt.AlignRight)
+        pct_edit.setAlignment(Qt.AlignmentFlag.AlignRight)
         pct_edit.setValidator(QDoubleValidator(0.0, 100.0, 1))
         pct_edit.setText(f"{self._percentages.get(lbl, 0.0):g}")
         row_layout.addWidget(pct_edit)
@@ -256,7 +256,7 @@ class AmplitudeSplitWidget(QWidget):
             # Percentage edit (editable for segments)
             pct_edit = QLineEdit()
             pct_edit.setMaximumWidth(55)
-            pct_edit.setAlignment(Qt.AlignRight)
+            pct_edit.setAlignment(Qt.AlignmentFlag.AlignRight)
             pct_edit.setValidator(QDoubleValidator(0.0, 100.0, 1))
             pct_edit.setText(f"{segment_percentage:g}")
             row_layout.addWidget(pct_edit)
