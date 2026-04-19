@@ -45,6 +45,7 @@ build = [
     "pyinstaller>=6.15.0",
     "opencv-python-headless>=4.12.0.88",
     "nuitka>=4.0.7",
+    "briefcase>=0.3.26",
 ]
 docs = [
     "sphinx>=9.0.4",
@@ -123,3 +124,25 @@ select = [
 ignore = [
     "E501",  # line too long (handled by formatter/line-length)
 ]
+
+# BeeWare Briefcase: native installers (Windows MSI / macOS .app + DMG).
+# App entrypoint: `python -m dbs_annotator` (see src/dbs_annotator/__main__.py).
+# Project [project] metadata (version via Hatch, dependencies) is merged by Briefcase.
+[tool.briefcase]
+project_name = "Clinical DBS Annotator"
+bundle = "ch.wysscenter.dbsannotator"
+# Briefcase requires a static version here even when [project] uses dynamic version from Hatch.
+version = "0.3.0"
+license = { file = "LICENSE" }
+
+[tool.briefcase.app.dbs_annotator]
+# Windows stub executable name is "{formal_name}.exe" (see BeeWare windows app template).
+formal_name = "DBSAnnotator"
+description = "A graphical user interface for annotating DBS clinical programming sessions"
+sources = ["src/dbs_annotator", "icons", "styles"]
+icon = "icons/logoneutral"
+installer_icon = "icons/logoneutral"
+# PySide6/Qt GUI (not Toga). Packaging uses the same dependency set as [project].
+
+[tool.briefcase.app.dbs_annotator.macOS]
+universal_build = false

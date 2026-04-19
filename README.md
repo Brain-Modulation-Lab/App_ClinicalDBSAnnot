@@ -7,13 +7,15 @@ A desktop application for annotating Deep Brain Stimulation (DBS) clinical progr
 
 ## For End Users
 
-**No installation required.** Download the pre-built executable and run it directly:
+Releases may ship as a **standalone executable** (PyInstaller/Nuitka in `dist/`), a **Briefcase** bundle (ZIP on Windows, DMG or `.app` on macOS), or an **MSI** installer when built with WiX. Follow the instructions for the artifact you downloaded.
+
+**Typical portable build (PyInstaller):**
 
 1. Go to the `dist/` folder
-2. Run the `ClinicalDBSAnnotator_*.exe` artifact for your platform/version
-3. That's it — the application opens immediately
+2. Run the `ClinicalDBSAnnotator_*.exe` artifact for your platform/version (Windows) or open the `.app` (macOS)
+3. The application is self-contained and includes dependencies
 
-The executable is self-contained and includes all dependencies.
+**Briefcase installers** register like a normal desktop app where the chosen format supports it (for example MSI).
 
 ## What It Does
 
@@ -59,7 +61,7 @@ We welcome contributions! Please see the [Contributing Guide](CONTRIBUTING.md) f
 
 ### Prerequisites
 
-- Python 3.11+
+- Python 3.14+ (see `requires-python` in `pyproject.toml`)
 - [uv](https://github.com/astral-sh/uv) (recommended) or pip
 
 ### Setup
@@ -94,7 +96,7 @@ App_ClinicalDBSAnnot/
 │   ├── utils/                    #   Utilities (export, themes, responsive, resources)
 │   ├── config.py                 #   App configuration and constants
 │   └── config_electrode_models.py #  Electrode model definitions
-├── styles/                       # QSS theme files (dark/light)
+├── styles/                       # QSS theme files (Briefcase + dev; see resource_path)
 ├── icons/                        # Application icons
 ├── scripts/                      # Build scripts (Windows, macOS)
 ├── run.py                        # Development entry point
@@ -117,6 +119,69 @@ python scripts/build_macos.py
 ```
 
 The executable is created in the `dist/` folder. Distribute this file — no Python installation needed on the target machine.
+
+### Native installers (BeeWare Briefcase)
+
+Briefcase turns this repo into **platform-native** bundles and installers. The GUI stack is **PySide6** (Qt); the packaged entrypoint is `python -m dbs_annotator` via `src/dbs_annotator/__main__.py`.
+
+**Install tooling (once per machine):**
+
+- **Windows:** [WiX Toolset](https://wixtoolset.org/) is required only if you build **MSI** installers (`briefcase package windows` defaults to MSI). For CI and quick artifacts, use **ZIP** packaging instead (no WiX): `briefcase package windows -p zip`.
+- **macOS:** Xcode **Command Line Tools** (`xcode-select --install`). For **DMG** output, Briefcase pulls `dmgbuild` via dependencies.
+
+**Typical local flow:**
+
+```bash
+uv sync --locked --dev --group build
+
+# First-time / after config changes — pick platform + format (examples):
+uv run briefcase create macOS app
+uv run briefcase build macOS app
+uv run briefcase package macOS -p dmg
+
+uv run briefcase create windows app
+uv run briefcase build windows app
+uv run briefcase package windows -p zip    # avoids WiX; omit -p (MSI) when WiX is installed
+```
+
+`macOS` builds on Apple Silicon produce **arm64** artifacts when `universal_build = false` is set under `[tool.briefcase.app.dbs_annotator.macOS]` in `pyproject.toml`.
+
+**Windows Briefcase quirks:** keep `[tool.briefcase].version` in sync with `dbs_annotator.__version__` (Briefcase does not use Hatch’s dynamic `[project]` version). If `briefcase build` fails at **“Setting stub app details”** / RCEdit with **“Unable to commit changes”**, exclude the repo or `build\` from real-time antivirus scanning and retry (see [Briefcase issue #1530](https://github.com/beeware/briefcase/issues/1530)).
+
+The Windows stub binary is named **`DBSAnnotator.exe`** (from `[tool.briefcase.app.dbs_annotator].formal_name`). After changing that field, run **`briefcase create windows app`** again (or delete `build\dbs_annotator\windows`) before **`briefcase build`**.
+
+Icons for the **stub**, **MSI/ZIP**, and **Qt** (`QApplication` / window chrome) come from **`icons/logoneutral.ico`** and **`icons/logoneutral.png`** at the **repository root** (`icon = "icons/logoneutral"` in `pyproject.toml`). That folder is also listed as a Briefcase **`sources`** entry so a sibling `icons\` directory is shipped next to the app package inside the bundle. Runtime lookup uses `resource_path()` (package dir, then `src\icons`, then repo-root `icons\`).
+
+**Inventory (for packaging):**
+
+| Area | Notes |
+| --- | --- |
+| App type | Qt **GUI** (`console_app` is false by default). |
+| Heavy deps | `PySide6`, `matplotlib`, `pandas`, `python-docx`, `docx2pdf` (Windows: `pywin32`; macOS: `appscript` via `docx2pdf`). |
+| Data files | JSON presets under `src/dbs_annotator/config/`; QSS and SVG under repo-root **`styles/`** (also a Briefcase **`sources`** entry); **`icons/logoneutral.{ico,png}`** at repo root (Briefcase + Qt). |
+| macOS entitlements | Add an entitlements plist only if you enable the Hardened Runtime and need extra capabilities (network is usually fine without custom entitlements). |
+
+### Release signing (distribution outside store)
+
+Signing is **not** wired in CI by default; release engineers use local or protected-runner secrets.
+
+**macOS (Developer ID + notarization):**
+
+1. Sign the `.app` (and DMG/PKG if applicable) with your **Developer ID Application** identity.
+2. Submit with `xcrun notarytool` (App Store Connect API key) and **staple** the ticket with `xcrun stapler staple`.
+3. Apple’s overview: [Developer ID](https://developers.apple.com/developer-id), [Packaging Mac software for distribution](https://developer.apple.com/documentation/xcode/packaging-mac-software-for-distribution).
+
+**Windows (Authenticode):**
+
+1. Sign the installer and/or binaries with **signtool** and your code-signing certificate (EV certificates accumulate **SmartScreen** reputation faster than OV-only setups).
+2. Briefcase documents Windows signing flags (`--cert-store`, `--timestamp-url`, etc.) in the [Windows platform reference](https://briefcase.beeware.org/en/latest/reference/platforms/windows/).
+
+**GitHub Actions secrets (when you automate signing):**
+
+| Secret | Purpose |
+| --- | --- |
+| `APPLE_API_ISSUER`, `APPLE_API_KEY_ID`, `APPLE_API_KEY` (or `.p8` file path in runner) | `notarytool` API key auth |
+| `WINDOWS_CERTIFICATE` / PFX password or hosted key reference | `signtool` / Briefcase signing |
 
 ### Running Tests
 
