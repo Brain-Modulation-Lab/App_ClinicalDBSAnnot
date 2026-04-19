@@ -1,0 +1,61 @@
+"""Extra WizardWindow navigation and chrome (pytest-qt)."""
+
+from __future__ import annotations
+
+from unittest.mock import MagicMock
+
+import pytest
+from PySide6.QtCore import Qt
+
+pytestmark = [pytest.mark.gui, pytest.mark.slow]
+
+
+def test_theme_toggle_invokes_theme_manager(wizard, qtbot, monkeypatch):
+    mock_tm = MagicMock()
+    mock_tm.is_dark_mode.return_value = False
+    mock_tm.get_current_theme.return_value = "light"
+    mock_tm.load_stylesheet.return_value = ""
+    monkeypatch.setattr(
+        "dbs_annotator.views.wizard_window.get_theme_manager",
+        lambda: mock_tm,
+    )
+    qtbot.mouseClick(wizard.theme_toggle_btn, Qt.MouseButton.LeftButton)
+    mock_tm.toggle_theme.assert_called_once_with(wizard.app)
+
+
+def test_go_back_from_step2_to_step1_full_workflow(wizard, qtbot):
+    wizard.workflow_mode = "full"
+    wizard._load_full_workflow_views()
+    wizard.current_step = 2
+    wizard.stack.setCurrentWidget(wizard.step2_view)
+    wizard._go_back()
+    assert wizard.current_step == 1
+    assert wizard.stack.currentWidget() is wizard.step1_view
+
+
+def test_go_back_from_step1_to_step0_full_workflow(wizard, qtbot):
+    wizard.workflow_mode = "full"
+    wizard._load_full_workflow_views()
+    wizard.current_step = 1
+    wizard.stack.setCurrentWidget(wizard.step1_view)
+    wizard._go_back()
+    assert wizard.current_step == 0
+    assert wizard.stack.currentWidget() is wizard.step0_view
+
+
+def test_go_back_annotations_only_step1_to_step0(wizard, qtbot):
+    wizard.workflow_mode = "annotations_only"
+    wizard._load_annotations_only_views()
+    wizard.current_step = 1
+    wizard.stack.setCurrentWidget(wizard.annotations_file_view)
+    wizard._go_back()
+    assert wizard.current_step == 0
+    assert wizard.stack.currentWidget() is wizard.step0_view
+
+
+def test_longitudinal_mode_sets_workflow_and_loads_view(wizard, qtbot):
+    assert wizard.longitudinal_file_view is None
+    wizard._select_longitudinal_report()
+    assert wizard.workflow_mode == "longitudinal"
+    assert wizard.longitudinal_file_view is not None
+    assert wizard.stack.currentWidget() is wizard.longitudinal_file_view
