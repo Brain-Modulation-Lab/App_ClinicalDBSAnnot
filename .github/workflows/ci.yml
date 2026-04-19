@@ -83,6 +83,17 @@ jobs:
         run: |
           uv sync --locked --dev
 
+      # PySide6 links libEGL even for offscreen; ubuntu-latest images omit it by default.
+      - name: Install Qt EGL/XCB dependencies (Ubuntu only)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libegl1 \
+            libgl1 \
+            libxkbcommon0 \
+            libdbus-1-3
+
       - name: Run pytest
         env:
           QT_QPA_PLATFORM: offscreen
