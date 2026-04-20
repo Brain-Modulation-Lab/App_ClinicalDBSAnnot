@@ -1,4 +1,4 @@
-name: CD - Create GitHub Release
+name: CD
 
 on:
   push:
