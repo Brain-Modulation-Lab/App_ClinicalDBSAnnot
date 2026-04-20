@@ -8,13 +8,7 @@ authors = [
     { name = "Matteo Vissani" },
     { name = "Richard Köhler", email = "richard.koehler@wysscenter.ch" },
 ]
-keywords = [
-    "dbs",
-    "clinical",
-    "annotation",
-    "neuroscience",
-    "deep-brain-stimulation",
-]
+keywords = ["dbs", "annotation", "neuroscience", "deep-brain-stimulation"]
 dynamic = ["version"]
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -51,7 +45,12 @@ dev = [
     "pyside6-stubs>=6.7.3.0",
 ]
 build = ["briefcase>=0.3.26"]
-docs = ["sphinx>=9.0.4", "sphinx-rtd-theme>=3.1.0", "sphinx-copybutton>=0.5.2"]
+docs = [
+    "sphinx>=9.0.4",
+    "sphinx-rtd-theme>=3.1.0",
+    "sphinx-copybutton>=0.5.2",
+    "myst-parser>=4.0.0",
+]
 
 [project.scripts]
 dbs-annotator = "dbs_annotator.__main__:main"
@@ -113,6 +112,34 @@ select = [
     "B",  # flake8-bugbear
     "C4", # flake8-comprehensions
 ]
+
+[tool.codespell]
+# `vas` is the clinical abbreviation for "Visual Analog Scale"; without this
+# it is reported as a misspelling of "was". Add further domain terms as they
+# come up.
+ignore-words-list = "vas"
+# Skip binary assets, generated build output, lockfiles, and logs.
+skip = "uv.lock,.venv,build,dist,htmlcov,docs/_build,*.svg,*.ico,*.png,*.pdf,*.log,*.min.js"
+
+[tool.doc8]
+max-line-length = 100
+# D004 "literal carriage return" fires on CRLF line endings (common on Windows
+# working trees); line-ending normalisation belongs to git attributes, not
+# to the prose linter.
+ignore = ["D004"]
+ignore-path = ["docs/_build"]
+
+[tool.interrogate]
+# Starting floor; raise as coverage improves.
+fail-under = 85
+ignore-init-module = true
+ignore-magic = true
+ignore-private = true
+ignore-semiprivate = true
+ignore-nested-functions = true
+exclude = ["tests", "build", "dist", ".venv", "docs/_build"]
+verbose = 0
+quiet = false
 
 [tool.uv]
 exclude-newer = "1 week"

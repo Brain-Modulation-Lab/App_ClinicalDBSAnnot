@@ -70,8 +70,8 @@ Development Setup
    .. code-block:: bash
 
       uv run python -m dbs_annotator
-      # or, equivalently, using the convenience entry point
-      uv run python run.py
+      # or, once installed, the console script declared in pyproject.toml
+      uv run dbs-annotator
 
 Types of Contributions
 ----------------------

@@ -128,6 +128,26 @@ jobs:
         run: |
           uv run pytest --cov-fail-under=48
 
+  prose-lint:
+    name: Prose lint (codespell + doc8 + interrogate)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57
+        with:
+          python-version: "3.12"
+          enable-cache: true
+
+      - name: Run pre-commit (prose hooks)
+        run: |
+          uv run pre-commit run --all-files codespell
+          uv run pre-commit run --all-files doc8
+          uv run pre-commit run --all-files interrogate
+
   docs:
     name: Docs (build + linkcheck)
     runs-on: ubuntu-latest
@@ -142,16 +162,34 @@ jobs:
           python-version: "3.12"
           enable-cache: true
 
+      # autosummary imports dbs_annotator modules that transitively touch
+      # PySide6; ubuntu-latest images omit the EGL/XCB libs that PySide6 needs
+      # even under QT_QPA_PLATFORM=offscreen.
+      - name: Install Qt EGL/XCB dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libegl1 \
+            libgl1 \
+            libxkbcommon0 \
+            libdbus-1-3
+
       - name: Sync docs dependency group
         run: |
           uv sync --locked --group docs --no-dev
 
       - name: Build HTML docs (warnings are errors)
+        env:
+          QT_QPA_PLATFORM: offscreen
+          MPLBACKEND: Agg
         run: |
           uv run sphinx-build -b html -W --keep-going docs docs/_build/html
 
       - name: Link check (non-blocking)
         continue-on-error: true
+        env:
+          QT_QPA_PLATFORM: offscreen
+          MPLBACKEND: Agg
         run: |
           uv run sphinx-build -b linkcheck docs docs/_build/linkcheck
 
