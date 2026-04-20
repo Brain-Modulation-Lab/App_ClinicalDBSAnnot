@@ -180,8 +180,18 @@ Signing is **not** wired in CI by default; release engineers use local or protec
 
 | Secret | Purpose |
 | --- | --- |
-| `APPLE_API_ISSUER`, `APPLE_API_KEY_ID`, `APPLE_API_KEY` (or `.p8` file path in runner) | `notarytool` API key auth |
-| `WINDOWS_CERTIFICATE` / PFX password or hosted key reference | `signtool` / Briefcase signing |
+| `WINDOWS_SIGN_PFX_BASE64` | Base64-encoded PFX certificate used by `signtool` in `release.yml` |
+| `WINDOWS_SIGN_PFX_PASSWORD` | Password for the PFX above |
+| `APPLE_IDENTITY` | Developer ID identity name for `codesign` |
+| `APPLE_API_ISSUER` | App Store Connect issuer for `notarytool` |
+| `APPLE_API_KEY_ID` | App Store Connect key id for `notarytool` |
+| `APPLE_API_KEY` | Contents of the `.p8` key file (stored as secret text) |
+
+**Test release workflow before tagging:**
+
+1. Open Actions and run `CD - Create GitHub Release` manually (`workflow_dispatch`).
+2. Set `publish_release=false` to build and upload artifacts **without** creating a release.
+3. Optionally set `sign_artifacts=true` to validate signing gates; leave it `false` if secrets are not configured yet.
 
 ### Running Tests
 

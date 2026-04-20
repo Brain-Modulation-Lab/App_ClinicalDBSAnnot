@@ -4,13 +4,25 @@ on:
   push:
     tags:
       - "v*"
+  workflow_dispatch:
+    inputs:
+      publish_release:
+        description: "Publish a GitHub Release (manual runs only)"
+        required: false
+        default: false
+        type: boolean
+      sign_artifacts:
+        description: "Enable code-signing steps if signing secrets are present"
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: write
 
 jobs:
-  build-and-release:
-    name: Build package and publish GitHub Release
+  build-python-dist:
+    name: Build Python distribution
     runs-on: ubuntu-latest
 
     steps:
@@ -27,9 +39,219 @@ jobs:
         run: |
           uv build
 
+      - name: Upload Python dist artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-dist
+          path: dist/*
+          if-no-files-found: error
+
+  build-briefcase-msi:
+    name: Build Briefcase MSI (Windows)
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57
+        with:
+          python-version: "3.14"
+          enable-cache: true
+
+      - name: Set up .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Install WiX CLI (prefer modern toolchain)
+        shell: pwsh
+        run: |
+          dotnet tool install --global wix --version "5.*"
+          "$env:USERPROFILE\.dotnet\tools" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          wix --version
+
+      - name: Sync dependencies (incl. build / Briefcase)
+        run: |
+          uv sync --locked --dev --group build
+
+      - name: Briefcase create / build / package (msi)
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: |
+          uv run briefcase create windows app
+          uv run briefcase build windows app
+          uv run briefcase package windows -p msi
+
+      - name: Validate Windows signing secrets (optional gate)
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.sign_artifacts }}
+        shell: pwsh
+        env:
+          WINDOWS_SIGN_PFX_BASE64: ${{ secrets.WINDOWS_SIGN_PFX_BASE64 }}
+          WINDOWS_SIGN_PFX_PASSWORD: ${{ secrets.WINDOWS_SIGN_PFX_PASSWORD }}
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:WINDOWS_SIGN_PFX_BASE64) -or [string]::IsNullOrWhiteSpace($env:WINDOWS_SIGN_PFX_PASSWORD)) {
+            throw "sign_artifacts=true but Windows signing secrets are missing."
+          }
+
+      - name: Sign MSI (optional)
+        if: ${{ secrets.WINDOWS_SIGN_PFX_BASE64 != '' && secrets.WINDOWS_SIGN_PFX_PASSWORD != '' && (github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.sign_artifacts)) }}
+        shell: pwsh
+        env:
+          WINDOWS_SIGN_PFX_BASE64: ${{ secrets.WINDOWS_SIGN_PFX_BASE64 }}
+          WINDOWS_SIGN_PFX_PASSWORD: ${{ secrets.WINDOWS_SIGN_PFX_PASSWORD }}
+        run: |
+          $pfxPath = Join-Path $env:RUNNER_TEMP "codesign.pfx"
+          [IO.File]::WriteAllBytes($pfxPath, [Convert]::FromBase64String($env:WINDOWS_SIGN_PFX_BASE64))
+          $secure = ConvertTo-SecureString $env:WINDOWS_SIGN_PFX_PASSWORD -AsPlainText -Force
+          Import-PfxCertificate -FilePath $pfxPath -Password $secure -CertStoreLocation Cert:\CurrentUser\My | Out-Null
+          $msis = Get-ChildItem -Path dist -Filter *.msi -Recurse
+          if (-not $msis) { throw "No MSI found under dist/ to sign." }
+          foreach ($msi in $msis) {
+            signtool sign /fd SHA256 /td SHA256 /tr http://timestamp.digicert.com /a "$($msi.FullName)"
+          }
+
+      - name: Upload Briefcase MSI artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: briefcase-msi
+          path: dist/*
+          if-no-files-found: error
+
+  build-briefcase-macos-arm:
+    name: Build Briefcase macOS DMG (arm64)
+    runs-on: macos-14
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57
+        with:
+          python-version: "3.14"
+          enable-cache: true
+
+      - name: Sync dependencies (incl. build / Briefcase)
+        run: |
+          uv sync --locked --dev --group build
+
+      - name: Briefcase create / build / package (dmg)
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: |
+          uv run briefcase create macOS app
+          uv run briefcase build macOS app
+          uv run briefcase package macOS -p dmg
+
+      - name: Validate macOS signing secrets (optional gate)
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.sign_artifacts }}
+        shell: bash
+        env:
+          APPLE_IDENTITY: ${{ secrets.APPLE_IDENTITY }}
+          APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
+          APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
+          APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
+        run: |
+          for var in APPLE_IDENTITY APPLE_API_ISSUER APPLE_API_KEY_ID APPLE_API_KEY; do
+            if [ -z "${!var}" ]; then
+              echo "sign_artifacts=true but missing secret: $var" >&2
+              exit 1
+            fi
+          done
+
+      - name: Sign and notarize DMG (optional)
+        if: ${{ secrets.APPLE_IDENTITY != '' && secrets.APPLE_API_ISSUER != '' && secrets.APPLE_API_KEY_ID != '' && secrets.APPLE_API_KEY != '' && (github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.sign_artifacts)) }}
+        shell: bash
+        env:
+          APPLE_IDENTITY: ${{ secrets.APPLE_IDENTITY }}
+          APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
+          APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
+          APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
+        run: |
+          KEY_PATH="$RUNNER_TEMP/AuthKey_${APPLE_API_KEY_ID}.p8"
+          printf '%s' "$APPLE_API_KEY" > "$KEY_PATH"
+          mapfile -t DMGS < <(find dist -name '*.dmg' -type f)
+          if [ "${#DMGS[@]}" -eq 0 ]; then
+            echo "No DMG found under dist/ to sign." >&2
+            exit 1
+          fi
+          for dmg in "${DMGS[@]}"; do
+            codesign --force --sign "$APPLE_IDENTITY" "$dmg"
+            xcrun notarytool submit "$dmg" --key "$KEY_PATH" --key-id "$APPLE_API_KEY_ID" --issuer "$APPLE_API_ISSUER" --wait
+            xcrun stapler staple "$dmg"
+          done
+
+      - name: Upload Briefcase macOS artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: briefcase-macos-arm64
+          path: dist/*
+          if-no-files-found: error
+
+  build-briefcase-linux-x86:
+    name: Build Briefcase Linux package (x86_64)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57
+        with:
+          python-version: "3.14"
+          enable-cache: true
+
+      # PySide6 links libEGL even for offscreen; ubuntu-latest images omit it by default.
+      - name: Install Qt EGL/XCB dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libegl1 \
+            libgl1 \
+            libxkbcommon0 \
+            libdbus-1-3
+
+      - name: Sync dependencies (incl. build / Briefcase)
+        run: |
+          uv sync --locked --dev --group build
+
+      - name: Briefcase create / build / package (linux system)
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: |
+          uv run briefcase create linux system
+          uv run briefcase build linux system
+          uv run briefcase package linux system
+
+      - name: Upload Briefcase Linux artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: briefcase-linux-x86_64
+          path: dist/*
+          if-no-files-found: warn
+
+  release:
+    name: Create GitHub Release and upload artifacts
+    runs-on: ubuntu-latest
+    needs:
+      - build-python-dist
+      - build-briefcase-msi
+      - build-briefcase-macos-arm
+      - build-briefcase-linux-x86
+    if: ${{ github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.publish_release) }}
+
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: release-assets
+
       - name: Create GitHub Release and upload artifacts
         uses: softprops/action-gh-release@v2
         with:
-          files: dist/*
+          files: release-assets/**/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
