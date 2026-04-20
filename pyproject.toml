@@ -37,7 +37,8 @@ dev = [
     "pytest-cov>=7.1.0",
     "ruff>=0.1.0",
     "pre-commit>=3.6",
-    "pre-commit-uv>=4.2.1",    
+    "pre-commit-uv>=4.2.1",
+    "towncrier>=24.0",
     "ty>=0.0.29",
     "pandas-stubs>=3.0.0.260204",
     "pyside6-stubs>=6.7.3.0",
@@ -145,3 +146,30 @@ installer_icon = "icons/logoneutral"
 
 [tool.briefcase.app.dbs_annotator.macOS]
 universal_build = false
+
+# Changelog fragments: add ``newsfragments/<issue>.<type>.rst`` (or ``+.<type>.rst``).
+# Assemble with ``uv run towncrier build --yes --version X.Y.Z --date YYYY-MM-DD``
+# or use ``scripts/release_prepare.py`` / the "Prepare release PR" workflow.
+[tool.towncrier]
+directory = "newsfragments"
+filename = "CHANGELOG.rst"
+package = "dbs_annotator"
+package_dir = "src"
+title_format = "{version} ({project_date})"
+underlines = ["-", ""]
+issue_format = "`#{issue} <https://github.com/bml/dbs-annotator/pull/{issue}>`__"
+
+[tool.towncrier.fragment.feature]
+name = "Features"
+
+[tool.towncrier.fragment.bugfix]
+name = "Bug fixes"
+
+[tool.towncrier.fragment.doc]
+name = "Documentation"
+
+[tool.towncrier.fragment.removal]
+name = "Removals and deprecations"
+
+[tool.towncrier.fragment.misc]
+name = "Miscellaneous"

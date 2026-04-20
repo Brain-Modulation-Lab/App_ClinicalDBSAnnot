@@ -105,6 +105,33 @@ Documentation is crucial for research software. We welcome:
 - Translation to other languages
 - Fixing typos and grammatical errors
 
+Sphinx-related paths under ``docs/``:
+
+- **``docs/_static/``** — **Keep in version control.** These are source assets (images,
+  optional extra CSS/JS). Sphinx only *copies* them into ``docs/_build/html/_static/``
+  when you build; the underscore is a Sphinx convention for “static inputs”, not
+  garbage output.
+
+- **``docs/_templates/``** (including ``_templates/autosummary/`` if present) —
+  **Keep in version control** when the ``.html``/``.rst`` files there are **hand-written**
+  Jinja templates that customize the HTML builder or autosummary. They are part of
+  your documentation *source*, not generated API stubs.
+
+- **``docs/_autosummary/``** at the **project root** (next to your ``.rst`` sources) —
+  **Do not commit.** Those files are **generated stubs** produced by
+  ``sphinx.ext.autosummary``; they belong in ``.gitignore`` and are recreated by
+  ``sphinx-build`` (or your docs CI job).
+
+- **``docs/_generated/``** — **Depends on your workflow.** If that directory holds
+  output from a **script** (for example includes generated from Python constants),
+  you can either (a) **commit** the files so a plain ``sphinx-build`` works everywhere,
+  with CI checking they are up to date, or (b) **gitignore** them and always run the
+  generator before Sphinx in CI and locally. Do **not** delete the folder if you still
+  ``.. include::`` it from an ``.rst`` file unless you switch fully to (b) and teach
+  CI to regenerate it.
+
+**Never commit** the HTML tree ``docs/_build/`` (already ignored).
+
 Code Standards
 ---------------
 
@@ -313,11 +340,11 @@ We use a simple branching strategy:
 Release Process
 ~~~~~~~~~~~~~~~
 
-1. **Update version number** in setup.py
-2. **Update changelog** with new features and fixes
-3. **Create release tag** on GitHub
-4. **Upload to PyPI** (if applicable)
-5. **Update documentation**
+Maintainers follow a **PR-based** flow: bump versions and assemble the changelog on a
+branch, merge to ``main``, then **tag** ``vX.Y.Z`` and push the tag to publish builds.
+
+See :doc:`releasing` for step-by-step instructions (local script, optional GitHub
+workflow, Towncrier fragments, and tagging).
 
 Continuous Integration
 ~~~~~~~~~~~~~~~~~~~~~~~
