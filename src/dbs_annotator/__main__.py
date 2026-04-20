@@ -6,13 +6,17 @@ and main window creation.
 """
 
 import logging
+import os
 import sys
 
 import PySide6.QtSvg  # noqa: F401 - required to enable SVG rendering in QSS
+from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QApplication
 
+from .config import ICO_FILENAME, ICON_FILENAME, ICONS_DIR
 from .logging_config import setup_bootstrap_logging, setup_logging
 from .utils import get_theme_manager
+from .utils.resources import resource_path
 from .views import WizardWindow
 
 logger = logging.getLogger(__name__)
@@ -31,6 +35,13 @@ def main() -> int:
 
         app.setApplicationName("Clinical DBS Annotator")
         app.setOrganizationName("BML")
+
+        # Windows taskbar / Alt+Tab: prefer .ico, then PNG (see icons/ at repo root).
+        for name in (ICO_FILENAME, ICON_FILENAME):
+            icon_path = resource_path(os.path.join(ICONS_DIR, name))
+            if os.path.isfile(icon_path):
+                app.setWindowIcon(QIcon(icon_path))
+                break
 
         setup_logging(app)
 

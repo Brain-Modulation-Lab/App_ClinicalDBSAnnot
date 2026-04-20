@@ -26,7 +26,7 @@ class ScalePresetManager:
             # For deployed app: C:\Program Files\BML\Clinical DBS Annotator\logs
             # For development: uses the source directory
             if getattr(sys, "frozen", False):
-                # Running as deployed executable (PyInstaller/Nuitka)
+                # Running as a deployed executable bundle
                 app_root = Path(sys.executable).parent
             else:
                 # Running in development mode
@@ -94,7 +94,7 @@ class ScalePresetManager:
         try:
             with open(self.config_file, encoding="utf-8") as f:
                 return json.load(f)
-        except OSError, json.JSONDecodeError:
+        except (OSError, json.JSONDecodeError):
             return None
 
     def _save_user_presets(self, presets: dict) -> None:

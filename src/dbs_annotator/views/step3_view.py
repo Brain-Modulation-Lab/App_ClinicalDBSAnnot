@@ -691,7 +691,7 @@ class Step3View(BaseStepView):
                 for seg in range(3)
             ]
             return all(state == ContactState.CATHODIC for state in seg_states)
-        except ValueError, IndexError:
+        except (ValueError, IndexError):
             return False
 
     def _create_session_scales_group(self) -> QGroupBox:
@@ -908,7 +908,7 @@ class Step3View(BaseStepView):
             total = sum(float(p) for p in parts)
             # Format to 2 decimal places, removing trailing zeros
             return f"{total:.2f}".rstrip("0").rstrip(".")
-        except ValueError, TypeError:
+        except (ValueError, TypeError):
             return amp_str
 
     def _apply_contact_text_to_canvas(

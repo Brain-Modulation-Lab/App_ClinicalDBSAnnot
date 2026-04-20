@@ -900,7 +900,7 @@ class LongitudinalExporter:
                     try:
                         v = float(val)
                         cell_text = str(int(v)) if v == int(v) else str(v)
-                    except ValueError, TypeError:
+                    except (ValueError, TypeError):
                         pass
 
                 if col in common_cols and row.get("laterality") == "R" and i > 0:
@@ -920,7 +920,7 @@ class LongitudinalExporter:
                         total = sum(values)
                         total_str = f"{total:.2f}".rstrip("0").rstrip(".")
                         row_cells[j].text = "\n".join(parts) + f"\n{total_str}"
-                    except ValueError, TypeError:
+                    except (ValueError, TypeError):
                         row_cells[j].text = cell_text
                 else:
                     row_cells[j].text = cell_text

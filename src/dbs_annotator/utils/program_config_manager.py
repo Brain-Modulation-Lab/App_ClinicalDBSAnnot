@@ -26,7 +26,7 @@ class ProgramConfigManager:
             # For deployed app: C:\Program Files\BML\Clinical DBS Annotator\logs
             # For development: uses the source directory
             if getattr(sys, "frozen", False):
-                # Running as deployed executable (PyInstaller/Nuitka)
+                # Running as a deployed executable bundle
                 app_root = Path(sys.executable).parent
             else:
                 # Running in development mode
@@ -51,7 +51,7 @@ class ProgramConfigManager:
                 with open(self.config_file, encoding="utf-8") as f:
                     data = json.load(f)
                     self._custom_programs = data.get("custom_programs", [])
-            except OSError, json.JSONDecodeError:
+            except (OSError, json.JSONDecodeError):
                 self._custom_programs = []
         else:
             self._custom_programs = []

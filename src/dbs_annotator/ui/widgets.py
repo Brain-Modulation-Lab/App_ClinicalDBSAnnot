@@ -196,7 +196,7 @@ class IncrementWidget(QWidget):
         """
         try:
             value = float(self.line_edit.text())
-        except ValueError, TypeError:
+        except (ValueError, TypeError):
             value = 0.0
 
         value += delta

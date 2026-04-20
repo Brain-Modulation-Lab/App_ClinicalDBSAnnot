@@ -123,7 +123,7 @@ class Step1View(BaseStepView):
                     canvas.model.is_directional
                     and canvas.model.is_level_directional(contact_idx)
                 )
-            except ValueError, IndexError:
+            except (ValueError, IndexError):
                 pass
         return False
 
@@ -1252,7 +1252,7 @@ class Step1View(BaseStepView):
                         try:
                             bid = int(float(row.get("block_id", "")))
                             sid = int(float(row.get("session_ID", "")))
-                        except ValueError, TypeError:
+                        except (ValueError, TypeError):
                             continue
                         if (
                             sid == max_session_id
@@ -1363,7 +1363,7 @@ class Step1View(BaseStepView):
                     if "." in f"{total:.1f}"
                     else str(int(total))
                 )
-            except ValueError, TypeError:
+            except (ValueError, TypeError):
                 # If parsing fails, return original
                 return amplitude_str
 

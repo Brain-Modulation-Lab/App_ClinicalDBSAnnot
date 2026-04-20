@@ -730,7 +730,7 @@ class SessionExporter:
                         val = float(row[col])
                         if val.is_integer():
                             cell_value = str(int(val))
-                    except ValueError, TypeError:
+                    except (ValueError, TypeError):
                         pass
 
                 if col in common_cols:
@@ -775,7 +775,7 @@ class SessionExporter:
                         total = sum(values)
                         total_str = f"{total:.2f}".rstrip("0").rstrip(".")
                         row_cells[j].text = "\n".join(parts) + f"\n{total_str}"
-                    except ValueError, TypeError:
+                    except (ValueError, TypeError):
                         row_cells[j].text = cell_value
                 else:
                     row_cells[j].text = cell_value
@@ -873,7 +873,7 @@ class SessionExporter:
         for _, row in df_l.iterrows():
             try:
                 block_id = int(row.get("block_id", 0))
-            except ValueError, TypeError:
+            except (ValueError, TypeError):
                 continue
             names = str(row.get("scale_name", "") or "").split("\n")
             values = str(row.get("scale_value", "") or "").split("\n")
