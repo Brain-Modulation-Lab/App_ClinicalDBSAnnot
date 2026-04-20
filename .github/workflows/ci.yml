@@ -9,6 +9,17 @@ on:
       - "**"
 
 jobs:
+  workflow-lint:
+    name: Workflow lint (actionlint)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Lint GitHub workflow files
+        uses: rhysd/actionlint@v1
+
   lint:
     name: Lint
     runs-on: ubuntu-latest

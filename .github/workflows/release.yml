@@ -71,6 +71,12 @@ jobs:
           dotnet tool install --global wix --version "5.*"
           "$env:USERPROFILE\.dotnet\tools" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
           wix --version
+          # Briefcase can use WIX env var; point it at the known-good CLI install.
+          $wixExe = Join-Path $env:USERPROFILE ".dotnet\tools\wix.exe"
+          if (-not (Test-Path $wixExe)) {
+            throw "WiX executable not found at expected path: $wixExe"
+          }
+          "WIX=$wixExe" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
       - name: Sync dependencies (incl. build / Briefcase)
         run: |
@@ -96,12 +102,16 @@ jobs:
           }
 
       - name: Sign MSI (optional)
-        if: ${{ secrets.WINDOWS_SIGN_PFX_BASE64 != '' && secrets.WINDOWS_SIGN_PFX_PASSWORD != '' && (github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.sign_artifacts)) }}
+        if: ${{ github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.sign_artifacts) }}
         shell: pwsh
         env:
           WINDOWS_SIGN_PFX_BASE64: ${{ secrets.WINDOWS_SIGN_PFX_BASE64 }}
           WINDOWS_SIGN_PFX_PASSWORD: ${{ secrets.WINDOWS_SIGN_PFX_PASSWORD }}
         run: |
+          if ([string]::IsNullOrWhiteSpace($env:WINDOWS_SIGN_PFX_BASE64) -or [string]::IsNullOrWhiteSpace($env:WINDOWS_SIGN_PFX_PASSWORD)) {
+            Write-Host "Windows signing secrets not configured; skipping MSI signing."
+            exit 0
+          }
           $pfxPath = Join-Path $env:RUNNER_TEMP "codesign.pfx"
           [IO.File]::WriteAllBytes($pfxPath, [Convert]::FromBase64String($env:WINDOWS_SIGN_PFX_BASE64))
           $secure = ConvertTo-SecureString $env:WINDOWS_SIGN_PFX_PASSWORD -AsPlainText -Force
@@ -162,7 +172,7 @@ jobs:
           done
 
       - name: Sign and notarize DMG (optional)
-        if: ${{ secrets.APPLE_IDENTITY != '' && secrets.APPLE_API_ISSUER != '' && secrets.APPLE_API_KEY_ID != '' && secrets.APPLE_API_KEY != '' && (github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.sign_artifacts)) }}
+        if: ${{ github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.sign_artifacts) }}
         shell: bash
         env:
           APPLE_IDENTITY: ${{ secrets.APPLE_IDENTITY }}
@@ -170,6 +180,12 @@ jobs:
           APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
           APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
         run: |
+          for var in APPLE_IDENTITY APPLE_API_ISSUER APPLE_API_KEY_ID APPLE_API_KEY; do
+            if [ -z "${!var}" ]; then
+              echo "macOS signing secrets not configured; skipping notarization/signing."
+              exit 0
+            fi
+          done
           KEY_PATH="$RUNNER_TEMP/AuthKey_${APPLE_API_KEY_ID}.p8"
           printf '%s' "$APPLE_API_KEY" > "$KEY_PATH"
           mapfile -t DMGS < <(find dist -name '*.dmg' -type f)
