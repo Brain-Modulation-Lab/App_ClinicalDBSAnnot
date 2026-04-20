@@ -495,7 +495,7 @@ class WizardController:
                         rows_to_keep.append(row)
                     else:
                         rows_to_delete.append(row)
-                except ValueError, TypeError:
+                except (ValueError, TypeError):
                     # If block_id is not a number, keep the row
                     rows_to_keep.append(row)
 

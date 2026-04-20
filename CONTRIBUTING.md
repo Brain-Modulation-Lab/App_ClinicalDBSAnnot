@@ -8,9 +8,10 @@ For detailed guidelines, please see the [Contributing Guide](docs/contributing.r
 
 1. Fork the repository
 2. Create a feature branch: `git checkout -b feature/your-feature-name`
-3. Make your changes following our coding standards
-4. Add tests for new functionality
-5. Submit a pull request
+3. Install pre-commit hooks: `uv run pre-commit install`
+4. Make your changes following our coding standards
+5. Add tests for new functionality
+6. Submit a pull request
 
 ## Key Requirements
 
@@ -18,6 +19,7 @@ For detailed guidelines, please see the [Contributing Guide](docs/contributing.r
 - Include tests for new features
 - Update documentation when needed
 - Ensure all tests pass before submitting
+- If you change build-time dependencies in `pyproject.toml` (including the **`build`** group used by Briefcase), run **`uv lock`** and commit the updated **`uv.lock`**
 
 ## Getting Help
 

@@ -5,6 +5,8 @@ This module contains the class for managing Deep Brain Stimulation parameters
 including frequency, contacts, amplitudes, and pulse widths.
 """
 
+from __future__ import annotations
+
 from dataclasses import dataclass
 
 

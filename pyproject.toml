@@ -2,7 +2,7 @@
 name = "dbs-annotator"
 description = "A graphical user interface for annotating DBS clinical programming sessions"
 readme = "README.md"
-requires-python = ">=3.14"
+requires-python = ">=3.12"
 authors = [
     { name = "Lucia Poma", email = "lucia.poma@wysscenter.ch" }
 ]
@@ -14,7 +14,7 @@ classifiers = [
     "Intended Audience :: Science/Research",
     "Topic :: Scientific/Engineering :: Medical Science Apps.",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.14",
+    "Programming Language :: Python :: 3.12",
     "License :: OSI Approved :: MIT License",
     "Environment :: X11 Applications :: Qt",
     "Operating System :: OS Independent",
@@ -37,14 +37,13 @@ dev = [
     "pytest-cov>=4.1.0",
     "ruff>=0.1.0",
     "pre-commit>=3.6",
-    "ty>=0.0.30",
+    "pre-commit-uv>=4.2.1",
+    "ty>=0.0.29",
     "pandas-stubs>=3.0.0.260204",
     "pyside6-stubs>=6.7.3.0",
 ]
 build = [
-    "pyinstaller>=6.15.0",
-    "opencv-python-headless>=4.12.0.88",
-    "nuitka>=4.0.7",
+    "briefcase>=0.3.26",
 ]
 docs = [
     "sphinx>=9.0.4",
@@ -99,7 +98,7 @@ omit = ["*/tests/*"]
 
 [tool.ruff]
 line-length = 88
-target-version = "py314"
+target-version = "py312"
 extend-exclude = [
     ".eggs",
     ".git",
@@ -123,3 +122,56 @@ select = [
 ignore = [
     "E501",  # line too long (handled by formatter/line-length)
 ]
+
+[tool.uv]
+# Only resolve/package versions that are at least 1 week old.
+exclude-newer = "1 week"
+
+# BeeWare Briefcase: native installers (Windows MSI / macOS .app + DMG).
+# App entrypoint: `python -m dbs_annotator` (see src/dbs_annotator/__main__.py).
+# Project [project] metadata (version via Hatch, dependencies) is merged by Briefcase.
+[tool.briefcase]
+project_name = "Clinical DBS Annotator"
+bundle = "ch.wysscenter.dbsannotator"
+# Briefcase requires a static version here even when [project] uses dynamic version from Hatch.
+version = "0.3.0"
+license = { file = "LICENSE" }
+
+[tool.briefcase.app.dbs_annotator]
+# Windows stub executable name is "{formal_name}.exe" (see BeeWare windows app template).
+formal_name = "DBSAnnotator"
+description = "A graphical user interface for annotating DBS clinical programming sessions"
+long_description = """
+Clinical DBS Annotator is a desktop application used to structure and review
+deep-brain stimulation programming sessions in a reproducible workflow.
+
+It supports clinicians and researchers by organizing session information,
+tracking stimulation settings, and generating standardized exports and reports.
+"""
+sources = ["src/dbs_annotator", "icons", "styles"]
+icon = "icons/logoneutral"
+installer_icon = "icons/logoneutral"
+# Force Briefcase's internal pip installer to resolve against live PyPI.
+requirement_installer_args = [
+    "--index-url",
+    "https://pypi.org/simple",
+    "--constraint",
+    "constraints-briefcase.txt",
+    "--retries",
+    "5",
+    "--timeout",
+    "60",
+    "--no-cache-dir",
+]
+# PySide6/Qt GUI (not Toga). Packaging uses the same dependency set as [project].
+
+[tool.briefcase.app.dbs_annotator.macOS]
+universal_build = false
+# PySide6 6.8+ publishes macOS wheels tagged `macosx_13_0_universal2`. The Briefcase
+# support-package Python on macOS advertises a lower platform tag by default, so its
+# embedded pip refuses all PySide6 versions newer than 6.7.3 with a misleading
+# "No matching distribution" error. Setting `min_os_version = "13.0"` tells Briefcase
+# (and the bundled interpreter/installer) to target macOS 13+, aligning platform tags
+# with the published wheels. If a compatible support package is not available, Briefcase
+# will select the closest one and raise the deployment target accordingly.
+min_os_version = "13.0"

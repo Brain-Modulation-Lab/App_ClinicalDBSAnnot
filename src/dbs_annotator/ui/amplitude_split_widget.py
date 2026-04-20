@@ -121,7 +121,7 @@ class AmplitudeSplitWidget(QWidget):
         # Multiple cathodes - use regular logic
         try:
             total_amp = float(total_text)
-        except ValueError, TypeError:
+        except (ValueError, TypeError):
             return total_text
 
         parts = []
@@ -356,7 +356,7 @@ class AmplitudeSplitWidget(QWidget):
         """Recompute the mA labels from the total amplitude and percentages."""
         try:
             total_amp = float(self._amp_edit.text())
-        except ValueError, TypeError:
+        except (ValueError, TypeError):
             total_amp = 0.0
 
         # Update all rows (both main contacts and segments)
@@ -386,7 +386,7 @@ class AmplitudeSplitWidget(QWidget):
                 self._amp_edit.setText(str(int(total)))
             else:
                 self._amp_edit.setText(f"{total:.1f}".rstrip("0").rstrip("."))
-        except ValueError, TypeError:
+        except (ValueError, TypeError):
             pass
 
     def set_amplitude_from_split(self, split_text: str) -> None:
@@ -423,7 +423,7 @@ class AmplitudeSplitWidget(QWidget):
             # Update the UI rows
             self._rebuild_rows()
 
-        except ValueError, TypeError:
+        except (ValueError, TypeError):
             # If parsing fails, use equal split
             self._redistribute_percentages()
 

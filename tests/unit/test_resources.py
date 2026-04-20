@@ -22,13 +22,12 @@ class TestResourcePath:
         assert os.path.exists(config_path) or "config" in config_path
 
     def test_resource_path_styles(self):
-        """Test that styles directory is accessible."""
+        """Test that QSS theme files resolve (repo-root or package `styles/`)."""
         from dbs_annotator.utils.resources import resource_path
 
-        # Styles are still in project root
         styles_path = resource_path("styles/light_theme.qss")
-        # Path should be constructed correctly
         assert "styles" in styles_path
+        assert os.path.exists(styles_path)
 
 
 class TestPackageDirectory:
