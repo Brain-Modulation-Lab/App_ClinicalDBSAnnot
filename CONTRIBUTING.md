@@ -4,6 +4,8 @@ We welcome contributions to the Clinical DBS Annotator! This document provides g
 
 For detailed guidelines, please see the [Contributing Guide](docs/contributing.rst).
 
+**Releases (maintainers):** use the PR-based process and manual `v*` tag described in [docs/releasing.rst](docs/releasing.rst) (Sphinx: *Developer guide → Releasing*). The helper is `scripts/release_prepare.py`; GitHub Actions workflow **CD - Prepare release PR** runs the same steps.
+
 ## Quick Start
 
 1. Fork the repository

@@ -18,7 +18,7 @@ Prerequisites
 To contribute to this project, you should have:
 
 - **Python 3.12 or newer** (matches ``requires-python`` in ``pyproject.toml``;
-  CI tests on 3.12, 3.13, and 3.14).
+  CI uses 3.12 on Ubuntu, Windows, and macOS).
 - **uv** (https://github.com/astral-sh/uv) for dependency management and
   running tools.
 - **Git** installed and configured.
@@ -166,6 +166,33 @@ Optional: regenerate UI screenshot artifacts for docs (uploaded as CI artifact):
 
    QT_QPA_PLATFORM=offscreen DOCS_SCREENSHOT_DIR=docs/_build/screenshots \
      uv run pytest tests/docs/test_docs_screenshots.py -m docs_screenshot
+
+Sphinx-related paths under ``docs/``:
+
+- **``docs/_static/``** — **Keep in version control.** These are source assets (images,
+  optional extra CSS/JS). Sphinx only *copies* them into ``docs/_build/html/_static/``
+  when you build; the underscore is a Sphinx convention for “static inputs”, not
+  garbage output.
+
+- **``docs/_templates/``** (including ``_templates/autosummary/`` if present) —
+  **Keep in version control** when the ``.html``/``.rst`` files there are **hand-written**
+  Jinja templates that customize the HTML builder or autosummary. They are part of
+  your documentation *source*, not generated API stubs.
+
+- **``docs/_autosummary/``** at the **project root** (next to your ``.rst`` sources) —
+  **Do not commit.** Those files are **generated stubs** produced by
+  ``sphinx.ext.autosummary``; they belong in ``.gitignore`` and are recreated by
+  ``sphinx-build`` (or your docs CI job).
+
+- **``docs/_generated/``** — **Depends on your workflow.** If that directory holds
+  output from a **script** (for example includes generated from Python constants),
+  you can either (a) **commit** the files so a plain ``sphinx-build`` works everywhere,
+  with CI checking they are up to date, or (b) **gitignore** them and always run the
+  generator before Sphinx in CI and locally. Do **not** delete the folder if you still
+  ``.. include::`` it from an ``.rst`` file unless you switch fully to (b) and teach
+  CI to regenerate it.
+
+**Never commit** the HTML tree ``docs/_build/`` (already ignored).
 
 Code Standards
 ---------------
@@ -324,8 +351,9 @@ Our review process:
    - ``uv audit`` for dependency vulnerabilities.
    - ``ruff`` (lint + format) and ``ty`` (type check).
    - ``pytest`` on Ubuntu, Windows, and macOS with a coverage floor.
-   - Briefcase ZIP packaging smoke test on Windows.
-   - Documentation build (Sphinx ``-W``) and link check.
+   - Prose checks (codespell, doc8, interrogate) via pre-commit.
+   - Briefcase smoke test on Linux (``create`` + ``build`` without packaging).
+   - Documentation build (Sphinx ``-W``), TSV schema doc drift check, and link check.
 
 2. **Peer review** by maintainers.
 3. **Discussion** of any required changes.
@@ -387,21 +415,28 @@ We use a simple trunk-based strategy:
 Release Process
 ~~~~~~~~~~~~~~~
 
-1. Update ``dbs_annotator.__version__`` in
-   ``src/dbs_annotator/__init__.py`` (Hatch reads this as the distribution
-   version) and, if it changed, ``[tool.briefcase].version`` in
+Maintainers follow a **PR-based** flow: bump versions and assemble the changelog on a
+branch, merge to ``main``, then **tag** ``vX.Y.Z`` and push the tag to publish builds.
+
+Concrete steps:
+
+1. Update ``dbs_annotator.__version__`` in ``src/dbs_annotator/__init__.py`` (Hatch
+   reads this as the distribution version) and ``[tool.briefcase].version`` in
    ``pyproject.toml``. These two values must match.
-2. Build ``CHANGELOG.md`` from Towncrier fragments:
+2. Build ``CHANGELOG.md`` from Towncrier fragments (or use ``scripts/release_prepare.py`` /
+   the **CD - Prepare release PR** workflow), for example:
 
    .. code-block:: bash
 
       uv run towncrier build --yes --version X.Y.Z --date YYYY-MM-DD
-3. Open a release PR, land it on ``main``, then push the matching
-   ``vX.Y.Z`` tag.
-4. The ``CD - Create GitHub Release`` workflow builds Python wheels/sdist and
-   Briefcase installers (Windows MSI, macOS DMG, Linux system package), then
-   creates the GitHub Release with artifacts attached.
+
+3. Open a release PR, land it on ``main``, then push the matching ``vX.Y.Z`` tag.
+4. The **CD - Create GitHub Release** workflow builds Python wheels/sdist and Briefcase
+   installers (Windows MSI, macOS DMG, Linux system package), then creates the GitHub
+   Release with artifacts attached.
 5. Read the Docs publishes the matching versioned documentation from the tag.
+
+See :doc:`releasing` for more detail (local script, workflow inputs, and tagging).
 
 Continuous Integration
 ~~~~~~~~~~~~~~~~~~~~~~

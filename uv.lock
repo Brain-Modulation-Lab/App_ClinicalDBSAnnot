@@ -11,7 +11,7 @@ resolution-markers = [
 ]
 
 [options]
-exclude-newer = "2026-04-13T16:16:17.7084443Z"
+exclude-newer = "2026-04-13T18:13:31.9494897Z"
 exclude-newer-span = "P1W"
 
 [[package]]
@@ -492,10 +492,10 @@ dev = [
     { name = "pre-commit", specifier = ">=3.6" },
     { name = "pre-commit-uv", specifier = ">=4.2.1" },
     { name = "pyside6-stubs", specifier = ">=6.7.3.0" },
-    { name = "pytest", specifier = ">=8.0.0" },
-    { name = "pytest-cov", specifier = ">=4.1.0" },
-    { name = "pytest-qt", specifier = ">=4.4.0" },
-    { name = "pytest-timeout", specifier = ">=2.3.0" },
+    { name = "pytest", specifier = ">=9.0.3" },
+    { name = "pytest-cov", specifier = ">=7.1.0" },
+    { name = "pytest-qt", specifier = ">=4.5.0" },
+    { name = "pytest-timeout", specifier = ">=2.4.0" },
     { name = "ruff", specifier = ">=0.1.0" },
     { name = "towncrier", specifier = ">=24.8.0" },
     { name = "ty", specifier = ">=0.0.29" },

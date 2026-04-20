@@ -51,6 +51,7 @@ Developed at the **Brain Modulation Lab, Massachusetts General Hospital**.
    :caption: Developer Guide
 
    contributing
+   releasing
    api
 
 ----

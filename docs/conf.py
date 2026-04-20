@@ -32,6 +32,9 @@ extensions = [
 ]
 
 templates_path = ["_templates"]
+# Do not list ``_autosummary`` here: those ``.rst`` stubs are generated under
+# ``docs/_autosummary/`` during the same build and must be parsed. (Ignore the
+# directory in git via ``.gitignore``, not in Sphinx ``exclude_patterns``.)
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
 # Known, non-actionable warnings that would otherwise fail `-W` builds.
