@@ -74,9 +74,9 @@ pip install -e .
 ### Running from Source
 
 ```bash
-python run.py
-# or
 python -m dbs_annotator
+# or, once the project is installed, the console script
+dbs-annotator
 ```
 
 ### Project Structure
@@ -94,7 +94,6 @@ App_ClinicalDBSAnnot/
 ├── styles/                       # QSS theme files (Briefcase + dev; see resource_path)
 ├── icons/                        # Application icons
 ├── scripts/                      # Utility scripts
-├── run.py                        # Development entry point
 └── pyproject.toml                # Project configuration and dependencies
 ```
 

@@ -16,6 +16,25 @@ repos:
       - id: ruff-check
         args: ["--fix"]
 
+  - repo: https://github.com/codespell-project/codespell
+    rev: v2.3.0
+    hooks:
+      - id: codespell
+        additional_dependencies: ["tomli"]
+
+  - repo: https://github.com/PyCQA/doc8
+    rev: v1.1.2
+    hooks:
+      - id: doc8
+        files: ^docs/.*\.rst$
+
+  - repo: https://github.com/econchick/interrogate
+    rev: 1.7.0
+    hooks:
+      - id: interrogate
+        pass_filenames: false
+        args: ["src/dbs_annotator"]
+
   - repo: local
     hooks:
       - id: ty-check
