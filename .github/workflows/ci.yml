@@ -194,7 +194,7 @@ jobs:
           uv run sphinx-build -b linkcheck docs docs/_build/linkcheck
 
       - name: Upload rendered HTML artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: docs-html-${{ github.sha }}
           path: docs/_build/html
@@ -202,7 +202,7 @@ jobs:
 
       - name: Upload linkcheck report
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: docs-linkcheck-${{ github.sha }}
           path: docs/_build/linkcheck
@@ -235,7 +235,7 @@ jobs:
           uv run briefcase package windows -p zip
 
       - name: Upload Briefcase ZIP artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: briefcase-windows-zip-${{ github.sha }}
           path: dist/

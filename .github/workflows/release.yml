@@ -115,7 +115,7 @@ jobs:
           uv build
 
       - name: Upload Python dist artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: python-dist
           path: dist/*
@@ -208,7 +208,7 @@ jobs:
           }
 
       - name: Upload Briefcase MSI artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: briefcase-msi
           path: dist/*
@@ -299,7 +299,7 @@ jobs:
           done
 
       - name: Upload Briefcase macOS artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: briefcase-macos-arm64
           path: dist/*
@@ -352,7 +352,7 @@ jobs:
           uv run briefcase package linux system --no-input
 
       - name: Upload Briefcase Linux artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: briefcase-linux-x86_64
           path: dist/*
