@@ -113,7 +113,8 @@ class SessionData:
             max_session = 0
         if parse_errors:
             logger.warning(
-                "Skipped %d malformed rows while opening session file in append mode: %s",
+                "Skipped %d malformed rows while opening session file in "
+                "append mode: %s",
                 parse_errors,
                 file_path,
             )
@@ -240,7 +241,8 @@ class SessionData:
                     "block_id": self.block_id,
                     "program_ID": group,
                     "session_ID": self.session_id,
-                    "is_initial": 1,  # Clinical scales are from view1, so is_initial = 1
+                    # Clinical scales are from view1, so is_initial = 1.
+                    "is_initial": 1,
                     "scale_name": scale.name,
                     "scale_value": scale.value,
                     "electrode_model": electrode_model,
@@ -376,7 +378,8 @@ class SessionData:
         self.tsv_file.flush()
 
     def open_simple_file_append(self, filepath: str) -> None:
-        """Open an existing annotations-only TSV file in append mode (or create if missing)."""
+        """Open an existing annotations-only TSV file in append mode
+        (or create it if missing)."""
         if self.is_file_open():
             raise ValueError(
                 "A file is already open. Close it before opening another file."

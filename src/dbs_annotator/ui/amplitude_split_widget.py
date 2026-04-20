@@ -69,7 +69,8 @@ class AmplitudeSplitWidget(QWidget):
         # Filter out "case" — CASE as cathode does not get a percentage row
         cathode_labels = [lbl for lbl in cathode_labels if lbl.lower() != "case"]
 
-        # Use the passed parameter to determine if this is a single grouped directional contact
+        # Use the passed parameter to determine if this is a single grouped
+        # directional contact.
 
         # Hide widget if no cathodes, or single non-grouped cathode
         if len(cathode_labels) == 0 or (
@@ -92,7 +93,8 @@ class AmplitudeSplitWidget(QWidget):
         # Compute new default percentages
         self._cathode_labels = list(cathode_labels)
         if len(cathode_labels) == 1 and is_single_grouped_directional:
-            # For single grouped directional contact, set 100% to enable segment splitting
+            # For single grouped directional contact, set 100% to enable
+            # segment splitting.
             self._percentages[cathode_labels[0]] = 100.0
         else:
             self._redistribute_percentages()
@@ -455,7 +457,8 @@ def get_cathode_labels(canvas) -> list[str]:
                     for seg in range(3)
                 ]
                 if all(s == ContactState.CATHODIC for s in seg_states):
-                    # All segments are cathodic - show as ring contact (no segment suffix)
+                    # All segments are cathodic - show as ring contact (no
+                    # segment suffix).
                     labels.append(f"E{contact_idx}")
                     continue
                 seg_labels = ["a", "b", "c"]

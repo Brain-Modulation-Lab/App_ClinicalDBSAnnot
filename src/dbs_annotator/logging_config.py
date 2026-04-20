@@ -32,7 +32,8 @@ def _safe_exc_info(
     tuple[type[BaseException], BaseException, TracebackType | None]
     | tuple[None, None, None]
 ):
-    """Normalize exception tuple for logging APIs that require non-optional exception values."""
+    """Normalize an exception tuple for logging APIs that require
+    non-optional exception values."""
     if exc_value is None:
         return (None, None, None)
     return (exc_type, exc_value, exc_traceback)
