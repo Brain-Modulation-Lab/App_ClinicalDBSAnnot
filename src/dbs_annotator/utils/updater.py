@@ -117,8 +117,19 @@ class _CheckWorker(QRunnable):
                 "User-Agent": f"DBSAnnotator/{self._current_version}",
             },
         )
-        with urllib.request.urlopen(request, timeout=self._timeout) as response:
-            payload = json.loads(response.read().decode("utf-8"))
+        try:
+            with urllib.request.urlopen(request, timeout=self._timeout) as response:
+                payload = json.loads(response.read().decode("utf-8"))
+        except urllib.error.HTTPError as exc:
+            # GitHub returns 404 when repo has no published releases (or repo missing).
+            if exc.code == 404:
+                logger.debug(
+                    "No GitHub releases/latest for %s (HTTP %s); treat as no update",
+                    self._repo,
+                    exc.code,
+                )
+                return None
+            raise
 
         tag = str(payload.get("tag_name", ""))
         if not tag:
