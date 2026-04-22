@@ -115,9 +115,45 @@ After the release-prep PR is **merged** into ``main``:
       git tag -a vX.Y.Z -m "Release vX.Y.Z" <merge_commit_sha>
       git push origin vX.Y.Z
 
+   If ``origin`` is your **fork**, use ``git push upstream vX.Y.Z`` to the
+   canonical lab repository (see the next section); ``git push origin`` alone is not
+   enough to run CD there.
+
 3. That push triggers ``.github/workflows/release.yml`` (tag pattern ``v*``), which
    builds Python wheels and Briefcase artifacts and, when appropriate, publishes a
    GitHub Release.
+
+Publish when ``origin`` is a fork
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+If you usually clone from your **fork** and ``git pull`` from ``main`` on the
+**canonical** repository, your remotes are typically:
+
+- ``origin`` — your fork (``git@github.com:<you>/<fork>.git``)
+- ``upstream`` — the lab repository where releases and ``main`` live
+
+In that case, ``git push origin vX.Y.Z`` only puts the tag on your fork. **GitHub
+Actions runs in the repository that receives the tag push.** Pushing the tag only
+to the fork will **not** run the org’s CD pipeline or create the release in the
+canonical project, even if you have **push access** to the upstream remote.
+
+**After** you create the same annotated tag on the merge commit in your local
+``main`` (which should match ``upstream/main`` or be fast-forwarded to it), **push
+the tag to the upstream remote**:
+
+.. code-block:: bash
+
+   # Once per machine: add upstream if missing
+   # git remote add upstream git@github.com:Brain-Modulation-Lab/DBSAnnotator.git
+   git fetch upstream
+   git checkout main
+   git pull upstream main
+   git tag -a vX.Y.Z -m "Release vX.Y.Z" <merge_commit_sha>   # only if you have not already
+   git push upstream vX.Y.Z
+
+You can also ``git push origin vX.Y.Z`` so your fork has the same tag, but the
+**upstream** push is the one that must happen for the official CD release. Verify
+remotes with ``git remote -v`` if you are unsure.
 
 Do **not** push a ``v*`` tag until the release-prep PR is merged and you are satisfied
 with ``CHANGELOG.md`` and the version numbers on ``main``.
