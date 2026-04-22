@@ -34,6 +34,7 @@ from PySide6.QtWidgets import (
 
 from ..config import (
     APP_ISSUES_URL,
+    APP_LEAD_AUTHOR,
     APP_NAME,
     APP_REPOSITORY_URL,
     APP_VERSION,
@@ -41,6 +42,7 @@ from ..config import (
     FONT_SCALE_ENABLED,
     ICON_FILENAME,
     ICONS_DIR,
+    ORGANIZATION_PUBLISHER,
     RESPONSIVE_WINDOW_RATIOS,
     SCREEN_SIZE_THRESHOLDS,
     UPDATE_FEEDBACK_EMAIL,
@@ -408,6 +410,10 @@ class WizardWindow(QWidget):
             <li>Add session annotations and notes</li>
             <li>Export your session data for documentation</li>
         </ol>
+
+        <h3>Credits</h3>
+        <p><b>Publisher:</b> {ORGANIZATION_PUBLISHER}<br/>
+        <b>Lead developer:</b> {APP_LEAD_AUTHOR}</p>
 
         <h3>Support & Contact</h3>
         <p><b>Repository:</b> <a href="{APP_REPOSITORY_URL}">{APP_REPOSITORY_URL}</a></p>

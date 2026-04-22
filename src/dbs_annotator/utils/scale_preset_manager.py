@@ -12,7 +12,7 @@ import json
 from pathlib import Path
 
 from ..config import CLINICAL_SCALES_PRESETS, SESSION_SCALES_PRESETS
-from .user_data import migrate_legacy_file, user_data_dir
+from .user_data import user_config_file, user_data_dir
 
 
 class ScalePresetManager:
@@ -30,7 +30,7 @@ class ScalePresetManager:
         """
         if config_dir is None:
             self.config_dir = user_data_dir()
-            self.config_file = migrate_legacy_file(self.CONFIG_FILENAME)
+            self.config_file = user_config_file(self.CONFIG_FILENAME)
         else:
             self.config_dir = Path(config_dir)
             self.config_dir.mkdir(parents=True, exist_ok=True)

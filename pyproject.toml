@@ -116,6 +116,7 @@ select = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
+"docs/conf.py" = ["E402"]
 "src/dbs_annotator/views/wizard_window.py" = ["E501"]
 
 [tool.codespell]
@@ -178,7 +179,7 @@ bundle = "ch.wysscenter.dbsannotator"
 # Briefcase requires a static version here even when [project] uses dynamic version
 version = "0.4.0a1"
 license = { file = "LICENSE" }
-author = "WyssCenter"
+author = "Lucia Poma"
 author_email = "lucia.poma@wysscenter.ch"
 url = "https://github.com/Brain-Modulation-Lab/App_ClinicalDBSAnnot"
 

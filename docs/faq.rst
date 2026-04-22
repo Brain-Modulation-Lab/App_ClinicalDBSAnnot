@@ -159,4 +159,5 @@ Contact & Support
 
 For bug reports, feature requests, or questions:
 
+| **Wyss Center for Bio and Neuroengineering**
 | **Lucia Poma** — lucia.poma@wysscenter.ch

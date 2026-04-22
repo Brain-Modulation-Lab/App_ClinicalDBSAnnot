@@ -13,18 +13,22 @@ from .version import get_version
 APP_NAME = "DBS Annotator"
 APP_VERSION = get_version()
 
-# Legal / marketing organization label (not used for on-disk paths).
-ORGANIZATION_NAME = "Wyss Center"
+# Publisher (UI, About, docs). Not used for on-disk paths.
+ORGANIZATION_PUBLISHER = "Wyss Center for Bio and Neuroengineering"
+
+# Lead author (About; list same person first in package metadata).
+APP_LEAD_AUTHOR = "Lucia Poma"
 
 # Qt application identity for :func:`QStandardPaths` and :class:`QSettings`.
 # Use ASCII without spaces so per-user directories never contain spaces
 # (``%LOCALAPPDATA%\\<org>\\<app>\\``, Application Support on macOS, etc.).
-FS_ORG_NAME = "WyssCenter"
+FS_ORG_NAME = "WyssGeneva"
 FS_APP_NAME = "DBSAnnotator"
 
 # Canonical upstream (releases + issue tracker; keep aligned with updater repo slug).
 APP_REPOSITORY_URL = "https://github.com/Brain-Modulation-Lab/App_ClinicalDBSAnnot"
 APP_ISSUES_URL = f"{APP_REPOSITORY_URL}/issues"
+# Primary contact for feedback (same person as APP_LEAD_AUTHOR).
 UPDATE_FEEDBACK_EMAIL = "lucia.poma@wysscenter.ch"
 
 # File paths (relative to executable)

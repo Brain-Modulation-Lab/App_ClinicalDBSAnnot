@@ -15,11 +15,13 @@ os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
 _DIST_NAME = "dbs-annotator"
 
+from dbs_annotator.config import APP_LEAD_AUTHOR, ORGANIZATION_PUBLISHER
+
 project = "DBS Annotator"
-author = "Wyss Center"
+author = APP_LEAD_AUTHOR
 release = metadata.version(_DIST_NAME)
 version = ".".join(release.split(".")[:2])
-copyright = f"2025-{datetime.now().year}, {author}"
+copyright = f"2025-{datetime.now().year}, {ORGANIZATION_PUBLISHER}"
 
 extensions = [
     "sphinx.ext.autodoc",

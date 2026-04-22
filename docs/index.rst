@@ -19,7 +19,8 @@ adjustments, to the automatic generation of structured Word and PDF reports.
 Developed at the **Brain Modulation Lab, Massachusetts General Hospital**.
 
 .. note::
-   Version |release|. Contact: lucia.poma@wysscenter.ch
+   Version |release|. Publisher: Wyss Center for Bio and Neuroengineering.
+   Contact: lucia.poma@wysscenter.ch
 
 ----
 

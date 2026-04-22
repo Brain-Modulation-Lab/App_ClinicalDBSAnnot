@@ -7,7 +7,7 @@
 A desktop application for annotating Deep Brain Stimulation (DBS) clinical programming sessions. Built for clinicians and researchers working with DBS systems (Medtronic Percept and others).
 
 **Version:** derived from `dbs_annotator.__version__`
-**Publisher:** Wyss Center (contact: lucia.poma@wysscenter.ch)
+**Publisher:** Wyss Center for Bio and Neuroengineering (contact: lucia.poma@wysscenter.ch)
 
 ## For End Users
 
@@ -132,7 +132,7 @@ uv run briefcase package windows -p zip    # avoids WiX; omit -p (MSI) when WiX 
 
 `macOS` builds on Apple Silicon produce **arm64** artifacts when `universal_build = false` is set under `[tool.briefcase.app.dbs_annotator.macOS]` in `pyproject.toml`.
 
-**Windows Briefcase quirks:** keep `[tool.briefcase].version` in sync with `dbs_annotator.__version__` (Briefcase does not use Hatch’s dynamic `[project]` version). If `briefcase build` fails at **“Setting stub app details”** / RCEdit with **“Unable to commit changes”**, exclude the repo or `build\` from real-time antivirus scanning and retry (see [Briefcase issue #1530](https://github.com/beeware/briefcase/issues/1530)).
+**Windows Briefcase quirks:** keep `[tool.briefcase].version` in sync with `dbs_annotator.__version__` (Briefcase does not use Hatch’s dynamic `[project]` version). Bump both in one step with `uv run python scripts/release_prepare.py <version>` (or `--bump …`). If `briefcase build` fails at **“Setting stub app details”** / RCEdit with **“Unable to commit changes”**, exclude the repo or `build\` from real-time antivirus scanning and retry (see [Briefcase issue #1530](https://github.com/beeware/briefcase/issues/1530)).
 
 The Windows stub binary is named **`DBSAnnotator.exe`** (from `[tool.briefcase.app.dbs_annotator].formal_name`). After changing that field, run **`briefcase create windows app`** again (or delete `build\dbs_annotator\windows`) before **`briefcase build`**.
 
@@ -209,4 +209,4 @@ MIT License — see [LICENSE](LICENSE) for details.
 
 ## Contact
 
-Wyss Center — lucia.poma@wysscenter.ch
+Wyss Center for Bio and Neuroengineering — lucia.poma@wysscenter.ch
