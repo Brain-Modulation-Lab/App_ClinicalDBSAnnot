@@ -450,12 +450,17 @@ jobs:
         run: |
           set -euo pipefail
           v="${GITHUB_REF_NAME#v}"
-          # Briefcase app key is dbs_annotator (underscore); some paths also use
-          # a dbs-annotator segment for the .deb. Avoid a bare "find -name app"
-          # (matches random site-packages *app* dirs and breaks tar).
-          app_dir=$(find build/dbs_annotator/linux -type d \( -path "*/dbs_annotator/app" -o -path "*/dbs-annotator/app" \) 2>/dev/null | head -1) || true
+          # Briefcase linux system: build/<app>/<vendor>/<codename>/... (not .../linux/...).
+          # App key dbs_annotator; .deb may use dbs-annotator. No bare "find -name app".
+          root="build/dbs_annotator"
+          if [ ! -d "${root}" ]; then
+            echo "::error::Missing Briefcase build tree at ${root}" >&2
+            find build -maxdepth 3 -type d 2>/dev/null | head -40 >&2 || true
+            exit 1
+          fi
+          app_dir=$(find "${root}" -type d \( -path "*/dbs_annotator/app" -o -path "*/dbs-annotator/app" \) 2>/dev/null | head -1) || true
           if [ -z "${app_dir}" ]; then
-            stub=$(find build/dbs_annotator/linux -type f \( -name dbs-annotator -o -name dbs_annotator \) 2>/dev/null | head -1) || true
+            stub=$(find "${root}" -type f \( -name dbs-annotator -o -name dbs_annotator \) 2>/dev/null | head -1) || true
             if [ -n "${stub}" ]; then
               d=$(dirname "${stub}")
               while [ "$(basename "${d}")" != "app" ] && [ "${d}" != "/" ] && [ -n "${d}" ]; do
@@ -467,8 +472,8 @@ jobs:
             fi
           fi
           if [ -z "${app_dir}" ]; then
-            echo "::error::Could not find Briefcase 'app' tree under build/dbs_annotator/linux" >&2
-            find build/dbs_annotator/linux -type d 2>/dev/null | head -80 >&2 || true
+            echo "::error::Could not find Briefcase 'app' tree under ${root}" >&2
+            find "${root}" -type d 2>/dev/null | head -80 >&2 || true
             exit 1
           fi
           parent=$(dirname "${app_dir}")
