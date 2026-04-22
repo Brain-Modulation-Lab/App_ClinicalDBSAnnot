@@ -31,6 +31,12 @@ Steps
    a. Copy the file to any folder you prefer (e.g. ``C:\Users\YourName\DBS_Tool\``).
    b. Double-click to launch — no further steps needed.
 
+4. **GitHub release with portable** ``.zip`` **(``DBSAnnotator-*.zip``):** to install
+   without using the unsigned MSI, use the PowerShell installer script from the
+   repository (see the README one-liner). It unpacks under
+   ``%LOCALAPPDATA%\\WyssGeneva\\DBSAnnotator\\app`` and adds a Start Menu
+   shortcut.
+
 .. note::
    The first launch may take 5–10 seconds while Windows extracts bundled
    libraries.  Subsequent launches are faster.

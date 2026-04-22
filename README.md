@@ -1,17 +1,27 @@
 # DBS Annotator
 
-[![CI](https://github.com/Brain-Modulation-Lab/App_ClinicalDBSAnnot/actions/workflows/ci.yml/badge.svg)](https://github.com/Brain-Modulation-Lab/App_ClinicalDBSAnnot/actions/workflows/ci.yml)
-[![Docs Health](https://github.com/Brain-Modulation-Lab/App_ClinicalDBSAnnot/actions/workflows/docs-health.yml/badge.svg)](https://github.com/Brain-Modulation-Lab/App_ClinicalDBSAnnot/actions/workflows/docs-health.yml)
-[![Release Drafter](https://github.com/Brain-Modulation-Lab/App_ClinicalDBSAnnot/actions/workflows/release-drafter.yml/badge.svg)](https://github.com/Brain-Modulation-Lab/App_ClinicalDBSAnnot/actions/workflows/release-drafter.yml)
+[CI](https://github.com/Brain-Modulation-Lab/DBSAnnotator/actions/workflows/ci.yml)
+[Docs Health](https://github.com/Brain-Modulation-Lab/DBSAnnotator/actions/workflows/docs-health.yml)
+[Release Drafter](https://github.com/Brain-Modulation-Lab/DBSAnnotator/actions/workflows/release-drafter.yml)
 
 A desktop application for annotating Deep Brain Stimulation (DBS) clinical programming sessions. Built for clinicians and researchers working with DBS systems (Medtronic Percept and others).
 
 **Version:** derived from `dbs_annotator.__version__`
-**Publisher:** Wyss Center for Bio and Neuroengineering (contact: lucia.poma@wysscenter.ch)
+**Publisher:** Wyss Center for Bio and Neuroengineering (contact: [lucia.poma@wysscenter.ch](mailto:lucia.poma@wysscenter.ch))
 
 ## For End Users
 
 Releases ship as **Briefcase-generated** artifacts (for example ZIP/MSI on Windows and DMG on macOS). Follow the instructions for the artifact you downloaded.
+
+### Windows — install from GitHub (PowerShell)
+
+Unsigned **MSI** can trigger **SmartScreen**; the release **portable `.zip`** (same app as the MSI) avoids the MSI path. When that `.zip` is attached to a release, you can install per-user under `%LOCALAPPDATA%\WyssGeneva\DBSAnnotator\app` and get Start Menu shortcut with one line (from PowerShell, after `main` has `scripts/Install-DBSAnnotator.ps1` — see the script if you are testing a feature branch, use that branch in the URL instead of `main`):
+
+```powershell
+iex (iwr -UseBasicParsing -UserAgent "DBSAnnotator-Install/1" -Uri "https://raw.githubusercontent.com/Brain-Modulation-Lab/DBSAnnotator/main/scripts/install.ps1").Content
+```
+
+Optional: add a desktop shortcut with `-AddDesktopShortcut`. The script picks the **newest** release that includes a `DBSAnnotator-*.zip` file (prereleases included). If your release has no `.zip` yet, tag again after [CD](.github/workflows/release.yml) has uploaded it, or run the same script with `-VersionTag vX.Y.Z` once that asset exists.
 
 ### macOS / Linux — shell install (curl / wget)
 
@@ -52,7 +62,7 @@ There is also a **Free Annotations** mode for quick timestamped text annotations
 ### Output Format
 
 Data is saved as TSV. The canonical schema is documented in
-[`docs/output_format.rst`](docs/output_format.rst) and auto-generated from the
+`[docs/output_format.rst](docs/output_format.rst)` and auto-generated from the
 code-level constants in `dbs_annotator.config` to prevent drift.
 
 ## Contributing
@@ -82,7 +92,7 @@ We welcome contributions! Please see the [Contributing Guide](CONTRIBUTING.md) f
 ### Setup
 
 ```bash
-cd App_ClinicalDBSAnnot
+cd DBSAnnotator
 
 # With uv (recommended)
 uv sync
@@ -105,7 +115,7 @@ dbs-annotator
 ### Project Structure
 
 ```
-App_ClinicalDBSAnnot/
+DBSAnnotator/
 ├── src/dbs_annotator/   # Application source code
 │   ├── models/                   #   Data models (session, scales, stimulation, electrode)
 │   ├── views/                    #   Qt views (step0-3, annotations, wizard window)
@@ -151,18 +161,20 @@ uv run briefcase package windows -p zip    # avoids WiX; omit -p (MSI) when WiX 
 
 **Windows Briefcase quirks:** keep `[tool.briefcase].version` in sync with `dbs_annotator.__version__` (Briefcase does not use Hatch’s dynamic `[project]` version). Bump both in one step with `uv run python scripts/release_prepare.py <version>` (or `--bump …`). If `briefcase build` fails at **“Setting stub app details”** / RCEdit with **“Unable to commit changes”**, exclude the repo or `build\` from real-time antivirus scanning and retry (see [Briefcase issue #1530](https://github.com/beeware/briefcase/issues/1530)).
 
-The Windows stub binary is named **`DBSAnnotator.exe`** (from `[tool.briefcase.app.dbs_annotator].formal_name`). After changing that field, run **`briefcase create windows app`** again (or delete `build\dbs_annotator\windows`) before **`briefcase build`**.
+The Windows stub binary is named `**DBSAnnotator.exe`** (from `[tool.briefcase.app.dbs_annotator].formal_name`). After changing that field, run `**briefcase create windows app**` again (or delete `build\dbs_annotator\windows`) before `**briefcase build**`.
 
-Icons for the **stub**, **MSI/ZIP**, and **Qt** (`QApplication` / window chrome) live under **`icons/logosimple/`**: **`logosimple.ico`**, **`logosimple.png`**, plus **`logosimple-{16,32,64,128,256,512}.png`** for **Linux system** (BeeWare copies them into the Freedesktop hicolor tree; all six are listed in the upstream `briefcase-linux-system-template`). **`logosimple.icns`** is for macOS (build with `iconutil` on a Mac; see `scripts/build_app_icons.py`). Configure with `icon = "icons/logosimple/logosimple"` in `pyproject.toml`. The repo-root **`icons/`** tree is a Briefcase **`sources`** entry and is shipped next to the app package; runtime lookup uses `resource_path()` (package dir, then `src/icons`, then repo-root `icons/`).
+Icons for the **stub**, **MSI/ZIP**, and **Qt** (`QApplication` / window chrome) live under `**icons/logosimple/`**: `**logosimple.ico**`, `**logosimple.png**`, plus `**logosimple-{16,32,64,128,256,512}.png**` for **Linux system** (BeeWare copies them into the Freedesktop hicolor tree; all six are listed in the upstream `briefcase-linux-system-template`). `**logosimple.icns`** is for macOS (build with `iconutil` on a Mac; see `scripts/build_app_icons.py`). Configure with `icon = "icons/logosimple/logosimple"` in `pyproject.toml`. The repo-root `**icons/**` tree is a Briefcase `**sources**` entry and is shipped next to the app package; runtime lookup uses `resource_path()` (package dir, then `src/icons`, then repo-root `icons/`).
 
 **Inventory (for packaging):**
 
-| Area | Notes |
-| --- | --- |
-| App type | Qt **GUI** (`console_app` is false by default). |
-| Heavy deps | `PySide6`, `matplotlib`, `pandas`, `python-docx`, `docx2pdf` (Windows: `pywin32`; macOS: `appscript` via `docx2pdf`). |
-| Data files | JSON presets under `src/dbs_annotator/config/`; QSS and SVG under repo-root **`styles/`** (also a Briefcase **`sources`** entry); app icons under **`icons/logosimple/`** (Briefcase + Qt). |
-| macOS entitlements | Add an entitlements plist only if you enable the Hardened Runtime and need extra capabilities (network is usually fine without custom entitlements). |
+
+| Area               | Notes                                                                                                                                                                                       |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| App type           | Qt **GUI** (`console_app` is false by default).                                                                                                                                             |
+| Heavy deps         | `PySide6`, `matplotlib`, `pandas`, `python-docx`, `docx2pdf` (Windows: `pywin32`; macOS: `appscript` via `docx2pdf`).                                                                       |
+| Data files         | JSON presets under `src/dbs_annotator/config/`; QSS and SVG under repo-root `**styles/`** (also a Briefcase `**sources**` entry); app icons under `**icons/logosimple/**` (Briefcase + Qt). |
+| macOS entitlements | Add an entitlements plist only if you enable the Hardened Runtime and need extra capabilities (network is usually fine without custom entitlements).                                        |
+
 
 ### Release signing (distribution outside store)
 
@@ -181,14 +193,16 @@ Signing is **not** wired in CI by default; release engineers use local or protec
 
 **GitHub Actions secrets (when you automate signing):**
 
-| Secret | Purpose |
-| --- | --- |
-| `WINDOWS_SIGN_PFX_BASE64` | Base64-encoded PFX certificate used by `signtool` in `release.yml` |
-| `WINDOWS_SIGN_PFX_PASSWORD` | Password for the PFX above |
-| `APPLE_IDENTITY` | Developer ID identity name for `codesign` |
-| `APPLE_API_ISSUER` | App Store Connect issuer for `notarytool` |
-| `APPLE_API_KEY_ID` | App Store Connect key id for `notarytool` |
-| `APPLE_API_KEY` | Contents of the `.p8` key file (stored as secret text) |
+
+| Secret                      | Purpose                                                            |
+| --------------------------- | ------------------------------------------------------------------ |
+| `WINDOWS_SIGN_PFX_BASE64`   | Base64-encoded PFX certificate used by `signtool` in `release.yml` |
+| `WINDOWS_SIGN_PFX_PASSWORD` | Password for the PFX above                                         |
+| `APPLE_IDENTITY`            | Developer ID identity name for `codesign`                          |
+| `APPLE_API_ISSUER`          | App Store Connect issuer for `notarytool`                          |
+| `APPLE_API_KEY_ID`          | App Store Connect key id for `notarytool`                          |
+| `APPLE_API_KEY`             | Contents of the `.p8` key file (stored as secret text)             |
+
 
 **Test release workflow before tagging:**
 
@@ -226,4 +240,4 @@ MIT License — see [LICENSE](LICENSE) for details.
 
 ## Contact
 
-Wyss Center for Bio and Neuroengineering — lucia.poma@wysscenter.ch
+Wyss Center for Bio and Neuroengineering — [lucia.poma@wysscenter.ch](mailto:lucia.poma@wysscenter.ch)
