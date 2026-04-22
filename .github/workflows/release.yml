@@ -450,17 +450,30 @@ jobs:
         run: |
           set -euo pipefail
           v="${GITHUB_REF_NAME#v}"
-          app_dir=$(find build/dbs_annotator/linux -path "*/dbs-annotator/app" -type d 2>/dev/null | head -1)
-          if [ -z "$app_dir" ]; then
-            app_dir=$(find build/dbs_annotator/linux -type d -name app 2>/dev/null | head -1)
+          # Briefcase app key is dbs_annotator (underscore); some paths also use
+          # a dbs-annotator segment for the .deb. Avoid a bare "find -name app"
+          # (matches random site-packages *app* dirs and breaks tar).
+          app_dir=$(find build/dbs_annotator/linux -type d \( -path "*/dbs_annotator/app" -o -path "*/dbs-annotator/app" \) 2>/dev/null | head -1) || true
+          if [ -z "${app_dir}" ]; then
+            stub=$(find build/dbs_annotator/linux -type f \( -name dbs-annotator -o -name dbs_annotator \) 2>/dev/null | head -1) || true
+            if [ -n "${stub}" ]; then
+              d=$(dirname "${stub}")
+              while [ "$(basename "${d}")" != "app" ] && [ "${d}" != "/" ] && [ -n "${d}" ]; do
+                d=$(dirname "${d}")
+              done
+              if [ "$(basename "${d}")" = "app" ] && [ -d "${d}/src" ]; then
+                app_dir=${d}
+              fi
+            fi
           fi
-          if [ -z "$app_dir" ]; then
-            echo "::error::No application 'app' tree under build/dbs_annotator/linux" >&2
+          if [ -z "${app_dir}" ]; then
+            echo "::error::Could not find Briefcase 'app' tree under build/dbs_annotator/linux" >&2
+            find build/dbs_annotator/linux -type d 2>/dev/null | head -80 >&2 || true
             exit 1
           fi
-          parent=$(dirname "$app_dir")
+          parent=$(dirname "${app_dir}")
           out="${GITHUB_WORKSPACE}/dist/dbs-annotator_${v}_linux_x86_64-raw.tar.gz"
-          (cd "$parent" && tar -czf "$out" "$(basename "$app_dir")")
+          (cd "${parent}" && tar -czf "${out}" "$(basename "${app_dir}")")
           echo "Linux raw: dist/dbs-annotator_${v}_linux_x86_64-raw.tar.gz"
 
       - name: Upload Briefcase Linux artifacts
