@@ -1,6 +1,6 @@
 [project]
 name = "dbs-annotator"
-description = "An application for annotating clinical programming sessions."
+description = "An application for annotating deep brain stimulation programming sessions."
 readme = "README.md"
 requires-python = ">=3.12"
 authors = [
@@ -59,7 +59,7 @@ dbs-annotator = "dbs_annotator.__main__:main"
 [project.urls]
 Homepage = "https://github.com/Brain-Modulation-Lab/App_ClinicalDBSAnnot"
 Repository = "https://github.com/Brain-Modulation-Lab/App_ClinicalDBSAnnot"
-Documentation = "https://app-clinicaldbsannot.readthedocs.io/en/latest/"
+Documentation = "https://dbs-annotator.readthedocs.io/en/latest/"
 
 [build-system]
 requires = ["hatchling"]
@@ -186,10 +186,10 @@ url = "https://github.com/Brain-Modulation-Lab/App_ClinicalDBSAnnot"
 
 [tool.briefcase.app.dbs_annotator]
 formal_name = "DBSAnnotator"
-description = "A graphical user interface for annotating DBS clinical programming sessions"
+description = "An application for annotating deep brain stimulation programming sessions."
 long_description = """
 DBS Annotator is a desktop application used to structure and review
-deep-brain stimulation programming sessions in a reproducible workflow.
+deep brain stimulation programming sessions in a reproducible workflow.
 
 It supports clinicians and researchers by organizing session information,
 tracking stimulation settings, and generating standardized exports and reports.
