@@ -1,27 +1,6 @@
 #Requires -Version 5.1
-<#
-.SYNOPSIS
-    Download the Windows portable .zip for DBSAnnotator from GitHub Releases and install
-    to your user profile (no unsigned MSI, no admin).
-
-.DESCRIPTION
-    Picks the newest non-draft release that has an asset named like "DBSAnnotator-<version>.zip" (BeeWare
-    briefcase "zip" output). Installs to:
-        %LOCALAPPDATA%\\WyssGeneva\\DBSAnnotator\\app
-    and creates a Start Menu shortcut. Use -AddDesktopShortcut for a desktop link.
-
-    Default GitHub repository: Brain-Modulation-Lab/DBSAnnotator. Override with
-    -GitHubRepository or environment variable DBS_ANNOTATOR_INSTALL_REPO (format: "Owner/Name").
-
-    Optional (plain iex one-liner cannot take switches; use & scriptblock or env):
-    DBS_ANNOTATOR_ADD_DESKTOP=1, DBS_ANNOTATOR_NO_START_MENU=1 (truthy: 1, true, yes)
-
-    Your release must include the portable .zip. If only an MSI exists, tag again after CI uploads the .zip.
-
-    README: raw .../main/scripts/install.ps1 — swap branch in URL as needed.
-#>
-# Advanced script: forwards -WhatIf / -Confirm; install logic runs inside Install-DbsAnnotatorApp
-# so $PSCmdlet is set (iex of script body would not bind script CmdletBinding).
+# Fetches DBSAnnotator-*.zip from GitHub Releases; installs to %LOCALAPPDATA%\WyssGeneva\DBSAnnotator\app.
+# Optional: DBS_ANNOTATOR_NO_START_MENU=1 (truthy: 1, true, yes). Repo: DBS_ANNOTATOR_INSTALL_REPO.
 [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = "Medium")]
 param(
     [string] $GitHubRepository = $(
@@ -29,7 +8,6 @@ param(
     ),
     [string] $VersionTag = "",
     [string] $InstallRoot = "",
-    [switch] $AddDesktopShortcut,
     [switch] $NoStartMenuShortcut
 )
 
@@ -44,13 +22,9 @@ function Install-DbsAnnotatorApp {
         ),
         [string] $VersionTag = "",
         [string] $InstallRoot = "",
-        [switch] $AddDesktopShortcut,
         [switch] $NoStartMenuShortcut
     )
 
-    if ($env:DBS_ANNOTATOR_ADD_DESKTOP -match '^(1|true|yes)$') {
-        $AddDesktopShortcut = $true
-    }
     if ($env:DBS_ANNOTATOR_NO_START_MENU -match '^(1|true|yes)$') {
         $NoStartMenuShortcut = $true
     }
@@ -118,7 +92,7 @@ set -VersionTag to a tag that has the .zip, or add the .zip to the release manua
     Write-Host "Asset:    $($asset.name) ($([math]::Round($asset.size / 1MB, 1)) MB)"
     Write-Host "Install:  $InstallRoot"
     if ($WhatIfPreference) {
-        Write-Host "What if:  would download, extract, and copy files, then add shortcuts (unless -NoStartMenuShortcut / -AddDesktopShortcut)."
+        Write-Host "What if:  would download, extract, copy files, add Start Menu shortcut (unless -NoStartMenuShortcut)."
         return
     }
     if (-not $PSCmdlet.ShouldProcess($InstallRoot, "Install DBSAnnotator (overwrite if present)")) {
@@ -165,17 +139,6 @@ set -VersionTag to a tag that has the .zip, or add the .zip to the release manua
                 $lnk.WorkingDirectory = $exe.DirectoryName
                 $lnk.IconLocation = $exe.FullName
                 $lnk.Save() | Out-Null
-            }
-        }
-        if ($AddDesktopShortcut) {
-            if ($PSCmdlet.ShouldProcess("Desktop", "Create DBSAnnotator shortcut")) {
-                $desk = [Environment]::GetFolderPath("Desktop")
-                $wsh2 = New-Object -ComObject WScript.Shell
-                $dl = $wsh2.CreateShortcut((Join-Path $desk "DBSAnnotator.lnk"))
-                $dl.TargetPath = $exe.FullName
-                $dl.WorkingDirectory = $exe.DirectoryName
-                $dl.IconLocation = $exe.FullName
-                $dl.Save() | Out-Null
             }
         }
         Write-Host "Done. Run:  $($exe.FullName)"
