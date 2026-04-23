@@ -464,12 +464,12 @@ jobs:
           if largest=$(find "${root}" -type d -name app 2>/dev/null | while read -r d; do du -sk "$d" 2>/dev/null; done | sort -n | tail -1); then
             app_dir=${largest#*[[:space:]]}
           fi
-          if [ -z "${app_dir}" ] || [ ! -d "${app_dir}/bin" ] || [ -z "$(ls -A "${app_dir}/bin" 2>/dev/null)" ]; then
+          if [ -z "${app_dir}" ] || [ ! -d "${app_dir}/bin" ] || [ -z "$(find "${app_dir}/bin" -mindepth 1 -maxdepth 1 2>/dev/null | head -n 1)" ]; then
             echo "::error::No Briefcase Linux app/ with a non-empty bin/ under ${root} (raw tar would lack the launcher). Listing app candidates:" >&2
             find "${root}" -type d -name app 2>/dev/null | while read -r d; do
               echo "--- $d" >&2
               du -sh "$d" 2>/dev/null || true
-              ls -la "${d}/bin" 2>/dev/null | head -20 >&2 || true
+              find "${d}/bin" -mindepth 1 -maxdepth 1 2>/dev/null | head -20 >&2 || true
             done
             exit 1
           fi
