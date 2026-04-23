@@ -1,0 +1,2 @@
+# Shell installers must be LF: piping to sh on Linux breaks on CRLF.
+scripts/*.sh text eol=lf

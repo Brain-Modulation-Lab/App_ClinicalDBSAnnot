@@ -213,7 +213,12 @@ install_linux_tar() {
   mkdir -p "$bin_dir"
   exe=$(linux_pick_exe "$prefix")
   if [ -z "$exe" ] || [ ! -x "$exe" ]; then
-    echo "Could not find executable under $prefix" >&2; exit 1
+    if [ -f "$prefix/dbs_annotator/__main__.py" ] && [ ! -d "$prefix/bin" ]; then
+      echo "Could not find Briefcase launcher under $prefix (missing bin/ stub). Raw .tar.gz for this version is source-only; use the .deb from the same release, or a release built after the raw-tar workflow fix." >&2
+    else
+      echo "Could not find executable under $prefix" >&2
+    fi
+    exit 1
   fi
   ln -sf "$exe" "$bin_dir/dbs-annotator"
   echo "Installed tree: $prefix"

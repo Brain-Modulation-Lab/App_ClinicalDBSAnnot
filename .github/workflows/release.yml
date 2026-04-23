@@ -458,22 +458,19 @@ jobs:
             find build -maxdepth 3 -type d 2>/dev/null | head -40 >&2 || true
             exit 1
           fi
-          app_dir=$(find "${root}" -type d \( -path "*/dbs_annotator/app" -o -path "*/dbs-annotator/app" \) 2>/dev/null | head -1) || true
-          if [ -z "${app_dir}" ]; then
-            stub=$(find "${root}" -type f \( -name dbs-annotator -o -name dbs_annotator \) 2>/dev/null | head -1) || true
-            if [ -n "${stub}" ]; then
-              d=$(dirname "${stub}")
-              while [ "$(basename "${d}")" != "app" ] && [ "${d}" != "/" ] && [ -n "${d}" ]; do
-                d=$(dirname "${d}")
-              done
-              if [ "$(basename "${d}")" = "app" ] && [ -d "${d}/src" ]; then
-                app_dir=${d}
-              fi
-            fi
+          # There may be multiple */app trees (e.g. shallow copy vs full system package with bin/).
+          # Pick the *largest* by disk — sources-only is tiny; real Briefcase tree includes bin/, lib/, support.
+          app_dir=""
+          if largest=$(find "${root}" -type d -name app 2>/dev/null | while read -r d; do du -sk "$d" 2>/dev/null; done | sort -n | tail -1); then
+            app_dir=${largest#*[[:space:]]}
           fi
-          if [ -z "${app_dir}" ]; then
-            echo "::error::Could not find Briefcase 'app' tree under ${root}" >&2
-            find "${root}" -type d 2>/dev/null | head -80 >&2 || true
+          if [ -z "${app_dir}" ] || [ ! -d "${app_dir}/bin" ] || [ -z "$(ls -A "${app_dir}/bin" 2>/dev/null)" ]; then
+            echo "::error::No Briefcase Linux app/ with a non-empty bin/ under ${root} (raw tar would lack the launcher). Listing app candidates:" >&2
+            find "${root}" -type d -name app 2>/dev/null | while read -r d; do
+              echo "--- $d" >&2
+              du -sh "$d" 2>/dev/null || true
+              ls -la "${d}/bin" 2>/dev/null | head -20 >&2 || true
+            done
             exit 1
           fi
           parent=$(dirname "${app_dir}")
